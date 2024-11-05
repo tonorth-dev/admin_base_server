@@ -1,4 +1,4 @@
-module github.com/flipped-aurora/gin-vue-admin/server
+module admin_base_server
 
 go 1.22
 
@@ -18,6 +18,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gookit/color v1.5.4
 	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.21.8+incompatible
+	github.com/jinzhu/gorm v1.9.16
 	github.com/jordan-wright/email v0.0.0-20200824153738-3f5bafa1cd84
 	github.com/mholt/archiver/v4 v4.0.0-alpha.8
 	github.com/mojocn/base64Captcha v1.3.6
