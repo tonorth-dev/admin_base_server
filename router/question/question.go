@@ -1,4 +1,4 @@
-package example
+package question
 
 import (
 	"admin_base_server/api/v1/question"

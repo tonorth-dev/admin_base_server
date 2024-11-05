@@ -6,3 +6,11 @@
 [admin_base_server]2024-11-05 20:30:27.988	[34minfo[0m	/Users/didi/go/src/admin_base_server/initialize/plugin.go:10	项目暂未初始化，无法安装插件，初始化后重启项目即可完成插件安装
 [admin_base_server]2024-11-05 20:30:27.988	[34minfo[0m	/Users/didi/go/src/admin_base_server/initialize/router.go:107	router register success
 [admin_base_server]2024-11-05 20:30:27.988	[34minfo[0m	/Users/didi/go/src/admin_base_server/core/server.go:37	server run success on 	{"address": ":8888"}
+[admin_base_server]2024-11-05 21:01:36.678	[34minfo[0m	/Users/didi/go/src/admin_base_server/initialize/router.go:60	register swagger handler
+[admin_base_server]2024-11-05 21:01:36.699	[34minfo[0m	/Users/didi/go/src/admin_base_server/initialize/plugin.go:10	项目暂未初始化，无法安装插件，初始化后重启项目即可完成插件安装
+[admin_base_server]2024-11-05 21:01:36.714	[34minfo[0m	/Users/didi/go/src/admin_base_server/initialize/router.go:107	router register success
+[admin_base_server]2024-11-05 21:01:36.715	[34minfo[0m	/Users/didi/go/src/admin_base_server/core/server.go:37	server run success on 	{"address": ":8888"}
+[admin_base_server]2024-11-05 21:15:35.234	[34minfo[0m	/Users/didi/go/src/admin_base_server/initialize/router.go:61	register swagger handler
+[admin_base_server]2024-11-05 21:15:35.237	[34minfo[0m	/Users/didi/go/src/admin_base_server/initialize/plugin.go:10	项目暂未初始化，无法安装插件，初始化后重启项目即可完成插件安装
+[admin_base_server]2024-11-05 21:15:35.237	[34minfo[0m	/Users/didi/go/src/admin_base_server/initialize/router.go:109	router register success
+[admin_base_server]2024-11-05 21:15:35.237	[34minfo[0m	/Users/didi/go/src/admin_base_server/core/server.go:37	server run success on 	{"address": ":8888"}
