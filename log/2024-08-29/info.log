@@ -1,0 +1,4 @@
+[github.com/flipped-aurora/gin-vue-admin/server]2024-08-29 13:32:10.883	[34minfo[0m	/Users/didi/go/src/15tech-pboard/server/initialize/router.go:60	register swagger handler
+[github.com/flipped-aurora/gin-vue-admin/server]2024-08-29 13:32:10.884	[34minfo[0m	/Users/didi/go/src/15tech-pboard/server/initialize/plugin.go:10	项目暂未初始化，无法安装插件，初始化后重启项目即可完成插件安装
+[github.com/flipped-aurora/gin-vue-admin/server]2024-08-29 13:32:10.884	[34minfo[0m	/Users/didi/go/src/15tech-pboard/server/initialize/router.go:107	router register success
+[github.com/flipped-aurora/gin-vue-admin/server]2024-08-29 13:32:10.885	[34minfo[0m	/Users/didi/go/src/15tech-pboard/server/core/server.go:37	server run success on 	{"address": ":8888"}
