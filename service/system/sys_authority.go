@@ -4,12 +4,12 @@ import (
 	"errors"
 	"strconv"
 
-	systemReq "github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
+	systemReq "admin_base_server/model/system/request"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/response"
+	"admin_base_server/global"
+	"admin_base_server/model/common/request"
+	"admin_base_server/model/system"
+	"admin_base_server/model/system/response"
 	"gorm.io/gorm"
 )
 
@@ -97,7 +97,7 @@ func (authorityService *AuthorityService) CopyAuthority(adminAuthorityID uint, c
 			return
 		}
 	}
-	paths := CasbinServiceApp.GetPolicyPathByAuthorityId(copyInfo.OldAuthorityId)
+	paths, _ := CasbinServiceApp.GetPolicyPathByAuthorityId(copyInfo.OldAuthorityId)
 	err = CasbinServiceApp.UpdateCasbin(adminAuthorityID, copyInfo.Authority.AuthorityId, paths)
 	if err != nil {
 		_ = authorityService.DeleteAuthority(&copyInfo.Authority)

@@ -3,7 +3,7 @@ package {{.Package}}
 
 import (
 	{{- if .GvaModel }}
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"admin_base_server/global"
 	{{- end }}
 	{{- if or .HasTimer }}
 	"time"

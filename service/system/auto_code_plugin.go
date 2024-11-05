@@ -1,14 +1,14 @@
 package system
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/model/system"
+	"admin_base_server/model/system/request"
+	"admin_base_server/utils"
+	"admin_base_server/utils/ast"
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils/ast"
 	"github.com/mholt/archiver/v4"
 	cp "github.com/otiai10/copy"
 	"github.com/pkg/errors"
@@ -115,7 +115,11 @@ func installation(path string, formPath string, toPath string) error {
 func filterFile(paths []string) []string {
 	np := make([]string, 0, len(paths))
 	for _, path := range paths {
-		if ok, _ := skipMacSpecialDocument(path); ok {
+		fileInfo, err := os.Stat(path)
+		if err != nil {
+			continue
+		}
+		if ok, _ := skipMacSpecialDocument(fileInfo, path, ""); ok {
 			continue
 		}
 		np = append(np, path)
@@ -123,7 +127,7 @@ func filterFile(paths []string) []string {
 	return np
 }
 
-func skipMacSpecialDocument(src string) (bool, error) {
+func skipMacSpecialDocument(srcinfo os.FileInfo, src, dest string) (bool, error) {
 	if strings.Contains(src, ".DS_Store") || strings.Contains(src, "__MACOSX") {
 		return true, nil
 	}

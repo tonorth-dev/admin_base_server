@@ -1,12 +1,12 @@
 package system
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/model/system/request"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
 	"gorm.io/gorm"
 	"sort"
 )

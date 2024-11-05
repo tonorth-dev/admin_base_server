@@ -1,14 +1,14 @@
 package system
 
 import (
+	"admin_base_server/global"
+	common "admin_base_server/model/common/request"
+	model "admin_base_server/model/system"
+	"admin_base_server/model/system/request"
+	"admin_base_server/utils"
+	"admin_base_server/utils/ast"
 	"context"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	common "github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
-	model "github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils/ast"
 	"github.com/pkg/errors"
 	"go/token"
 	"gorm.io/gorm"

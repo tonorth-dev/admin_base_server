@@ -1,7 +1,7 @@
 package system
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/middleware"
+	"admin_base_server/middleware"
 	"github.com/gin-gonic/gin"
 )
 

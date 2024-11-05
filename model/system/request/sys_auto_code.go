@@ -1,9 +1,9 @@
 package request
 
 import (
+	model "admin_base_server/model/system"
 	"encoding/json"
 	"fmt"
-	model "github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/pkg/errors"
 	"go/token"
 	"strings"

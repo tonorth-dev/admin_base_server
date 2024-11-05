@@ -1,11 +1,11 @@
 package system
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
-	systemRes "github.com/flipped-aurora/gin-vue-admin/server/model/system/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"admin_base_server/global"
+	"admin_base_server/model/common/response"
+	"admin_base_server/model/system/request"
+	systemRes "admin_base_server/model/system/response"
+	"admin_base_server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -64,6 +64,6 @@ func (cas *CasbinApi) GetPolicyPathByAuthorityId(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	paths := casbinService.GetPolicyPathByAuthorityId(casbin.AuthorityId)
+	paths, _ := casbinService.GetPolicyPathByAuthorityId(casbin.AuthorityId)
 	response.OkWithDetailed(systemRes.PolicyPathResponse{Paths: paths}, "获取成功", c)
 }

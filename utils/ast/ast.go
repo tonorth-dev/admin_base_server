@@ -1,8 +1,8 @@
 package ast
 
 import (
+	"admin_base_server/model/system"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"go/ast"
 	"go/parser"
 	"go/token"

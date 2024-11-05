@@ -1,13 +1,13 @@
 package system
 
 import (
+	"admin_base_server/global"
+	model "admin_base_server/model/system"
+	"admin_base_server/model/system/request"
+	utilsAst "admin_base_server/utils/ast"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	model "github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
-	utilsAst "github.com/flipped-aurora/gin-vue-admin/server/utils/ast"
 	"github.com/pkg/errors"
 	"go/ast"
 	"go/format"

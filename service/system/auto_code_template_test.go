@@ -1,9 +1,9 @@
 package system
 
 import (
+	"admin_base_server/model/system/request"
 	"context"
 	"encoding/json"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
 	"reflect"
 	"testing"
 )

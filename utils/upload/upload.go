@@ -3,7 +3,7 @@ package upload
 import (
 	"mime/multipart"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"admin_base_server/global"
 )
 
 // OSS 对象存储接口
@@ -27,8 +27,6 @@ func NewOss() OSS {
 		return &TencentCOS{}
 	case "aliyun-oss":
 		return &AliyunOSS{}
-	case "huawei-obs":
-		return HuaWeiObs
 	case "aws-s3":
 		return &AwsS3{}
 	case "cloudflare-r2":

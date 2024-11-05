@@ -8,8 +8,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
+	"admin_base_server/global"
+	"admin_base_server/model/common/response"
 	"github.com/gin-gonic/gin"
 )
 

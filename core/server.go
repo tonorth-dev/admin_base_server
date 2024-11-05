@@ -1,10 +1,10 @@
 package core
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/initialize"
+	"admin_base_server/service/system"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/initialize"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/system"
 	"go.uber.org/zap"
 )
 

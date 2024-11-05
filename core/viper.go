@@ -1,9 +1,9 @@
 package core
 
 import (
+	"admin_base_server/core/internal"
 	"flag"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/core/internal"
 	"github.com/gin-gonic/gin"
 	"os"
 	"path/filepath"
@@ -11,7 +11,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"admin_base_server/global"
 )
 
 // Viper //

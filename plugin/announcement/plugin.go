@@ -1,9 +1,9 @@
 package announcement
 
 import (
+	"admin_base_server/plugin/announcement/initialize"
+	interfaces "admin_base_server/utils/plugin/v2"
 	"context"
-	"github.com/flipped-aurora/gin-vue-admin/server/plugin/announcement/initialize"
-	interfaces "github.com/flipped-aurora/gin-vue-admin/server/utils/plugin/v2"
 	"github.com/gin-gonic/gin"
 )
 

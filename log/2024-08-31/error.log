@@ -1,7 +1,7 @@
-[github.com/flipped-aurora/gin-vue-admin/server]2024-08-31 15:18:35.080	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/core/server.go:53	net.Listen error: listen tcp :8888: bind: address already in use
-[github.com/flipped-aurora/gin-vue-admin/server]2024-08-31 15:40:04.534	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/core/server.go:53	net.Listen error: listen tcp :8888: bind: address already in use
-[github.com/flipped-aurora/gin-vue-admin/server]2024-08-31 15:46:33.424	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/core/server.go:53	accept tcp [::]:8888: use of closed network connection
-[github.com/flipped-aurora/gin-vue-admin/server]2024-08-31 15:48:21.190	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/core/server.go:53	net.Listen error: listen tcp :8888: bind: address already in use
-[github.com/flipped-aurora/gin-vue-admin/server]2024-08-31 15:51:37.856	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/api/v1/system/sys_user.go:56	登陆失败! 用户名不存在或者密码错误!	{"error": "db not init"}
-[github.com/flipped-aurora/gin-vue-admin/server]2024-08-31 15:52:49.372	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/api/v1/system/sys_initdb.go:34	自动创建数据库失败!	{"error": "dial tcp 127.0.0.1:18999: connect: connection refused"}
-[github.com/flipped-aurora/gin-vue-admin/server]2024-08-31 15:53:09.097	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/api/v1/system/sys_initdb.go:34	自动创建数据库失败!	{"error": "dial tcp 221.219.101.46:18999: connect: connection refused"}
+[admin_base_server]2024-08-31 15:18:35.080	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/core/server.go:53	net.Listen error: listen tcp :8888: bind: address already in use
+[admin_base_server]2024-08-31 15:40:04.534	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/core/server.go:53	net.Listen error: listen tcp :8888: bind: address already in use
+[admin_base_server]2024-08-31 15:46:33.424	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/core/server.go:53	accept tcp [::]:8888: use of closed network connection
+[admin_base_server]2024-08-31 15:48:21.190	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/core/server.go:53	net.Listen error: listen tcp :8888: bind: address already in use
+[admin_base_server]2024-08-31 15:51:37.856	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/api/v1/system/sys_user.go:56	登陆失败! 用户名不存在或者密码错误!	{"error": "db not init"}
+[admin_base_server]2024-08-31 15:52:49.372	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/api/v1/system/sys_initdb.go:34	自动创建数据库失败!	{"error": "dial tcp 127.0.0.1:18999: connect: connection refused"}
+[admin_base_server]2024-08-31 15:53:09.097	[31merror[0m	/Users/didi/go/src/15tech-pboard/server/api/v1/system/sys_initdb.go:34	自动创建数据库失败!	{"error": "dial tcp 221.219.101.46:18999: connect: connection refused"}

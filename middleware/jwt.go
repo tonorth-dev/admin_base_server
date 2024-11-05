@@ -1,15 +1,15 @@
 package middleware
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/utils"
 	"errors"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/golang-jwt/jwt/v4"
 	"strconv"
 	"time"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/service"
+	"admin_base_server/model/common/response"
+	"admin_base_server/service"
 
 	"github.com/gin-gonic/gin"
 )

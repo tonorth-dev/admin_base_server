@@ -1,9 +1,9 @@
 package system
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/model/system/response"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/response"
 	"path/filepath"
 	"strings"
 )

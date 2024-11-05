@@ -1,8 +1,8 @@
 package request
 
 import (
+	"admin_base_server/config"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/config"
 	"os"
 )
 

@@ -1,7 +1,7 @@
 package request
 
 import (
-	model "github.com/flipped-aurora/gin-vue-admin/server/model/system"
+	model "admin_base_server/model/system"
 )
 
 type SysAutoCodePackageCreate struct {

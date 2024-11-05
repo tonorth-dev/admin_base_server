@@ -6,12 +6,12 @@ import (
 	"mime/multipart"
 	"strconv"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/model/example"
+	"admin_base_server/model/example"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
-	exampleRes "github.com/flipped-aurora/gin-vue-admin/server/model/example/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"admin_base_server/global"
+	"admin_base_server/model/common/response"
+	exampleRes "admin_base_server/model/example/response"
+	"admin_base_server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

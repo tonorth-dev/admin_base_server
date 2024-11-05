@@ -4,9 +4,9 @@ import (
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/core"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/initialize"
+	"admin_base_server/core"
+	"admin_base_server/global"
+	"admin_base_server/initialize"
 )
 
 //go:generate go env -w GO111MODULE=on

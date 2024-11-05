@@ -1,5 +1,5 @@
 package plugin
 
-import "github.com/flipped-aurora/gin-vue-admin/server/plugin/{{ .Package }}/config"
+import "admin_base_server/plugin/{{ .Package }}/config"
 
 var Config config.Config

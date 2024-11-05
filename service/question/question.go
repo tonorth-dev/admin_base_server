@@ -1,16 +1,17 @@
 package question
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/model/question"
-	"github.com/jinzhu/gorm"
+	"admin_base_server/global"
+	"admin_base_server/model/question"
+	"gorm.io/gorm"
 )
 
 type QuestionService struct {
 	DB *gorm.DB
 }
 
-func NewQuestionService(db *gorm.DB) *QuestionService {
-	return &QuestionService{DB: db}
+func NewQuestionService() *QuestionService {
+	return &QuestionService{DB: global.GVA_DB}
 }
 
 func (s *QuestionService) CreateQuestion(q *question.Question) error {

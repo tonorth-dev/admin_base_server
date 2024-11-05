@@ -1,10 +1,10 @@
 package system
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/model/common/request"
+	"admin_base_server/model/system"
 	"errors"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"gorm.io/gorm"
 	"strconv"
 )

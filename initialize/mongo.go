@@ -1,11 +1,11 @@
 package initialize
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/initialize/internal"
+	"admin_base_server/utils"
 	"context"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/initialize/internal"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/pkg/errors"
 	"github.com/qiniu/qmgo"
 	"github.com/qiniu/qmgo/options"

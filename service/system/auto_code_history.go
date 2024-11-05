@@ -1,10 +1,10 @@
 package system
 
 import (
+	"admin_base_server/utils/ast"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils/ast"
 	"github.com/pkg/errors"
 	"path"
 	"path/filepath"
@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	common "github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
-	model "github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	request "github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"admin_base_server/global"
+	common "admin_base_server/model/common/request"
+	model "admin_base_server/model/system"
+	request "admin_base_server/model/system/request"
+	"admin_base_server/utils"
 
 	"go.uber.org/zap"
 )

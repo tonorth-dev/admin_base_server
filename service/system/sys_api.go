@@ -1,12 +1,12 @@
 package system
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/model/common/request"
+	"admin_base_server/model/system"
+	systemRes "admin_base_server/model/system/response"
 	"errors"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	systemRes "github.com/flipped-aurora/gin-vue-admin/server/model/system/response"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -242,7 +242,7 @@ func (apiService *ApiService) GetAllApis(authorityID uint) (apis []system.SysApi
 	if parentAuthorityID == 0 || !global.GVA_CONFIG.System.UseStrictAuth {
 		return
 	}
-	paths := CasbinServiceApp.GetPolicyPathByAuthorityId(authorityID)
+	paths, _ := CasbinServiceApp.GetPolicyPathByAuthorityId(authorityID)
 	// 挑选 apis里面的path和method也在paths里面的api
 	var authApis []system.SysApi
 	for i := range apis {

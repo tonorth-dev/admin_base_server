@@ -1,10 +1,10 @@
 package initialize
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/plugin/email"
+	"admin_base_server/utils/plugin"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/plugin/email"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils/plugin"
 	"github.com/gin-gonic/gin"
 )
 

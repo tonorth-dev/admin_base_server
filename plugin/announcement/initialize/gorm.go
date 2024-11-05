@@ -1,10 +1,10 @@
 package initialize
 
 import (
+	"admin_base_server/global"
+	"admin_base_server/plugin/announcement/model"
 	"context"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/plugin/announcement/model"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )

@@ -1,9 +1,9 @@
 package system
 
 import (
+	sysModel "admin_base_server/model/system"
+	"admin_base_server/service/system"
 	"context"
-	sysModel "github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/system"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
