@@ -2,14 +2,14 @@ package router
 
 import (
 	"admin_base_server/router/example"
-	"admin_base_server/router/question"
 	"admin_base_server/router/system"
+	"admin_base_server/router/warehouse"
 )
 
 var RouterGroupApp = new(RouterGroup)
 
 type RouterGroup struct {
-	System   system.RouterGroup
-	Example  example.RouterGroup
-	Question question.QuestionRouter
+	System    system.RouterGroup
+	Example   example.RouterGroup
+	Warehouse warehouse.RouterGroup
 }

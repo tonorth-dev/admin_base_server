@@ -1,19 +1,27 @@
-package question
+package warehouse
 
 import (
+	"admin_base_server/api/v1/warehouse"
+	qservice "admin_base_server/service/warehouse"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
-// QuestionRouter 路由管理器
-type QuestionRouter struct{}
+// WarehouseRouter 路由管理器
+type WarehouseRouter struct{}
 
 // @Summary 初始化试题和题组路由
 // @Description 初始化试题和题组的相关路由
 // @Tags admin
-// @Router /admin/question [post,get,put,delete]
-// @Router /admin/question-group [post,get,put,delete]
-func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
-	questionRouter := Router.Group("admin/question")
+// @Router /admin/warehouse [post,get,put,delete]
+// @Router /admin/warehouse-group [post,get,put,delete]
+func (e *WarehouseRouter) InitWarehouseRouter(Router *gin.RouterGroup) {
+
+	warehouseAPI = warehouse.NewWarehouseAPI(qservice.NewWarehouseService())
+	warehouseGroupAPI = warehouse.NewWarehouseGroupAPI(qservice.NewWarehouseGroupService())
+
+	fmt.Println("warehouseAPI:", warehouseAPI)
+	warehouseRouter := Router.Group("admin/warehouse")
 	{
 		// 试题路由
 		// @Summary 创建试题
@@ -21,11 +29,11 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Tags 试题管理
 		// @Accept json
 		// @Produce json
-		// @Param body body models.Question true "试题信息"
+		// @Param body body models.Warehouse true "试题信息"
 		// @Success 200 {object} models.Response
 		// @Failure 400 {object} models.Response
-		// @Router /question [post]
-		questionRouter.POST("/question", questionAPI.CreateQuestion)
+		// @Router /warehouse [post]
+		warehouseRouter.POST("/warehouse", warehouseAPI.CreateWarehouse)
 
 		// @Summary 获取试题详情
 		// @Description 根据ID获取试题详情
@@ -33,10 +41,10 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Accept json
 		// @Produce json
 		// @Param id path string true "试题ID"
-		// @Success 200 {object} models.Question
+		// @Success 200 {object} models.Warehouse
 		// @Failure 400 {object} models.Response
-		// @Router /question/{id} [get]
-		questionRouter.GET("/question/:id", questionAPI.GetQuestionByID)
+		// @Router /warehouse/{id} [get]
+		warehouseRouter.GET("/warehouse/:id", warehouseAPI.GetWarehouseByID)
 
 		// @Summary 更新试题
 		// @Description 根据ID更新试题信息
@@ -44,11 +52,11 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Accept json
 		// @Produce json
 		// @Param id path string true "试题ID"
-		// @Param body body models.Question true "试题信息"
+		// @Param body body models.Warehouse true "试题信息"
 		// @Success 200 {object} models.Response
 		// @Failure 400 {object} models.Response
-		// @Router /question/{id} [put]
-		questionRouter.PUT("/question/:id", questionAPI.UpdateQuestion)
+		// @Router /warehouse/{id} [put]
+		warehouseRouter.PUT("/warehouse/:id", warehouseAPI.UpdateWarehouse)
 
 		// @Summary 删除试题
 		// @Description 根据ID删除试题
@@ -58,8 +66,8 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Param id path string true "试题ID"
 		// @Success 200 {object} models.Response
 		// @Failure 400 {object} models.Response
-		// @Router /question/{id} [delete]
-		questionRouter.DELETE("/question/:id", questionAPI.DeleteQuestion)
+		// @Router /warehouse/{id} [delete]
+		warehouseRouter.DELETE("/warehouse/:id", warehouseAPI.DeleteWarehouse)
 
 		// @Summary 批量导入试题
 		// @Description 批量导入试题
@@ -69,8 +77,8 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Param file formData file true "文件"
 		// @Success 200 {object} models.Response
 		// @Failure 400 {object} models.Response
-		// @Router /question/batch-import [post]
-		questionRouter.POST("/question/batch-import", questionAPI.BatchImportQuestions)
+		// @Router /warehouse/batch-import [post]
+		warehouseRouter.POST("/warehouse/batch-import", warehouseAPI.BatchImportWarehouses)
 
 		// @Summary 导出试题
 		// @Description 导出试题
@@ -79,8 +87,8 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Produce octet-stream
 		// @Success 200 {file} file
 		// @Failure 400 {object} models.Response
-		// @Router /question/export [get]
-		questionRouter.GET("/question/export", questionAPI.ExportQuestions)
+		// @Router /warehouse/export [get]
+		warehouseRouter.GET("/warehouse/export", warehouseAPI.ExportWarehouses)
 	}
 	{
 		// 题组路由
@@ -89,11 +97,11 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Tags 题组管理
 		// @Accept json
 		// @Produce json
-		// @Param body body models.QuestionGroup true "题组信息"
+		// @Param body body models.WarehouseGroup true "题组信息"
 		// @Success 200 {object} models.Response
 		// @Failure 400 {object} models.Response
-		// @Router /question-group [post]
-		questionRouter.POST("/question-group", questionGroupAPI.CreateQuestionGroup)
+		// @Router /warehouse-group [post]
+		warehouseRouter.POST("/warehouse-group", warehouseGroupAPI.CreateWarehouseGroup)
 
 		// @Summary 获取题组详情
 		// @Description 根据ID获取题组详情
@@ -101,10 +109,10 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Accept json
 		// @Produce json
 		// @Param id path string true "题组ID"
-		// @Success 200 {object} models.QuestionGroup
+		// @Success 200 {object} models.WarehouseGroup
 		// @Failure 400 {object} models.Response
-		// @Router /question-group/{id} [get]
-		questionRouter.GET("/question-group/:id", questionGroupAPI.GetQuestionGroupByID)
+		// @Router /warehouse-group/{id} [get]
+		warehouseRouter.GET("/warehouse-group/:id", warehouseGroupAPI.GetWarehouseGroupByID)
 
 		// @Summary 更新题组
 		// @Description 根据ID更新题组信息
@@ -112,11 +120,11 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Accept json
 		// @Produce json
 		// @Param id path string true "题组ID"
-		// @Param body body models.QuestionGroup true "题组信息"
+		// @Param body body models.WarehouseGroup true "题组信息"
 		// @Success 200 {object} models.Response
 		// @Failure 400 {object} models.Response
-		// @Router /question-group/{id} [put]
-		questionRouter.PUT("/question-group/:id", questionGroupAPI.UpdateQuestionGroup)
+		// @Router /warehouse-group/{id} [put]
+		warehouseRouter.PUT("/warehouse-group/:id", warehouseGroupAPI.UpdateWarehouseGroup)
 
 		// @Summary 删除题组
 		// @Description 根据ID删除题组
@@ -126,8 +134,8 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Param id path string true "题组ID"
 		// @Success 200 {object} models.Response
 		// @Failure 400 {object} models.Response
-		// @Router /question-group/{id} [delete]
-		questionRouter.DELETE("/question-group/:id", questionGroupAPI.DeleteQuestionGroup)
+		// @Router /warehouse-group/{id} [delete]
+		warehouseRouter.DELETE("/warehouse-group/:id", warehouseGroupAPI.DeleteWarehouseGroup)
 
 		// @Summary 导出题组为PDF
 		// @Description 根据ID导出题组为PDF
@@ -137,7 +145,7 @@ func (e *QuestionRouter) InitQuestionRouter(Router *gin.RouterGroup) {
 		// @Param id path string true "题组ID"
 		// @Success 200 {file} file
 		// @Failure 400 {object} models.Response
-		// @Router /question-group/export-pdf/{id} [get]
-		questionRouter.GET("/question-group/export-pdf/:id", questionGroupAPI.ExportQuestionGroupPDF)
+		// @Router /warehouse-group/export-pdf/{id} [get]
+		warehouseRouter.GET("/warehouse-group/export-pdf/:id", warehouseGroupAPI.ExportWarehouseGroupPDF)
 	}
 }

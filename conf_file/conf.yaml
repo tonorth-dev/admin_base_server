@@ -1,0 +1,138 @@
+# config.yaml
+
+jwt:
+  signing-key: "your-secret-key" # JWT签名密钥
+  expires-time: 86400               # JWT过期时间（秒）
+  buffer-time: 86400               # 缓冲时间（秒）
+  issuer: "your-app-name"       # JWT签发者
+
+zap:
+  level: "info"                 # 日志级别（debug, info, warn, error, fatal, panic）
+  prefix: "admin_server"           # 日志文件名
+  format: ""                 # 输出
+  director: "./log"               # 最多保留多少个旧日志文件
+  retention-day: 365                   # 旧日志文件最长保存天数
+
+redis:
+  addr: "127.0.0.1:6379"             # Redis主机地址
+  password: ""                  # Redis密码（如果有的话）
+  db: 0                         # Redis数据库编号
+  useCluster: false
+
+#mongo:
+#  uri: "mongodb://127.0.0.1:27017" # MongoDB连接URI
+#  dbName: "your-database-name"     # MongoDB数据库名称
+
+#email:
+#  smtpHost: "smtp.example.com"     # SMTP服务器地址
+#  smtpPort: 587                    # SMTP服务器端口
+#  fromEmail: "no-reply@example.com" # 发件人邮箱
+#  username: "your-email@example.com" # SMTP用户名
+#  password: "your-password"        # SMTP密码
+
+system:
+  db-type: "mysql"               # 环境（development, production）
+  addr: 8888                       # 服务端口
+
+captcha:
+  keyLong: 6                      # 验证码长度
+  imgHeight: 80                   # 验证码图片高度
+  imgWidth: 240                   # 验证码图片宽度
+  storeType: "memory"             # 验证码存储类型（memory, redis, etc.）
+
+autocode:
+  dir: "./auto_code"              # 自动代码生成目录
+  packageName: "autocode"         # 自动生成代码的包名
+  moduleName: "admin_base_server" # 项目模块名
+
+mysql:
+  prefix: ""                      # 数据库前缀
+  port: "3306"                    # 数据库端口
+  config: "charset=utf8mb4&parseTime=True&loc=Local" # 高级配置
+  db-name: "hongshi_interview"    # 数据库名
+  username: "root"                # 数据库账号
+  password: "123456Abc"            # 数据库密码
+  path: "127.0.0.1"               # 数据库地址
+  engine: "InnoDB"                # 数据库引擎，默认InnoDB
+  log-mode: "info"                # 是否开启Gorm全局日志
+  max-idle-conns: 10              # 空闲中的最大连接数
+  max-open-conns: 100             # 打开到数据库的最大连接数
+  singular: false                 # 是否开启全局禁用复数，true表示开启
+  log-zap: true                   # 是否通过zap写入日志文件
+
+#pgsql:
+#  prefix: ""                      # 数据库前缀
+#  port: "5432"                    # 数据库端口
+#  config: "sslmode=disable"       # 高级配置
+#  db-name: "admin_base"           # 数据库名
+#  username: "postgres"            # 数据库账号
+#  password: "your-password"       # 数据库密码
+#  path: "127.0.0.1"               # 数据库地址
+#  engine: "InnoDB"                # 数据库引擎，默认InnoDB
+#  log-mode: "info"                # 是否开启Gorm全局日志
+#  max-idle-conns: 10              # 空闲中的最大连接数
+#  max-open-conns: 100             # 打开到数据库的最大连接数
+#  singular: false                 # 是否开启全局禁用复数，true表示开启
+#  log-zap: true                   # 是否通过zap写入日志文件
+
+local:
+  path: "./local_storage"         # 本地存储路径
+
+#qiniu:
+#  accessKey: "your-access-key"    # 七牛云Access Key
+#  secretKey: "your-secret-key"    # 七牛云Secret Key
+#  bucket: "your-bucket"           # 七牛云Bucket名称
+#  endpoint: "http://upload.qiniup.com" # 七牛云上传端点
+#
+#aliyun-oss:
+#  accessKey: "your-access-key"    # 阿里云OSS Access Key
+#  secretKey: "your-secret-key"    # 阿里云OSS Secret Key
+#  bucket: "your-bucket"           # 阿里云OSS Bucket名称
+#  endpoint: "http://oss-cn-hangzhou.aliyuncs.com" # 阿里云OSS Endpoint
+#
+#hua-wei-obs:
+#  accessKey: "your-access-key"    # 华为云OBS Access Key
+#  secretKey: "your-secret-key"    # 华为云OBS Secret Key
+#  bucket: "your-bucket"           # 华为云OSS Bucket名称
+#  endpoint: "https://obs.cn-north-1.myhuaweicloud.com" # 华为云OBS Endpoint
+#
+#tencent-cos:
+#  secretId: "your-secret-id"      # 腾讯云COS Secret Id
+#  secretKey: "your-secret-key"    # 腾讯云COS Secret Key
+#  bucket: "your-bucket"           # 腾讯云COS Bucket名称
+#  region: "ap-beijing"            # 腾讯云COS区域
+#
+#aws-s3:
+#  accessKey: "your-access-key"    # AWS S3 Access Key
+#  secretKey: "your-secret-key"    # AWS S3 Secret Key
+#  bucket: "your-bucket"           # AWS S3 Bucket名称
+#  region: "us-west-1"             # AWS S3区域
+#
+#cloudflare-r2:
+#  accountId: "your-account-id"    # Cloudflare R2 Account ID
+#  accessKey: "your-access-key"    # Cloudflare R2 Access Key
+#  secretKey: "your-secret-key"    # Cloudflare R2 Secret Key
+#  bucket: "your-bucket"           # Cloudflare R2 Bucket名称
+#
+#excel:
+#  templateDir: "./excel_templates" # Excel模板目录
+#
+#disk-list:
+#  - name: "disk1"
+#    path: "/mnt/disk1"             # 磁盘路径
+#  - name: "disk2"
+#    path: "/mnt/disk2"             # 磁盘路径
+
+cors:
+  mode: "on"                       # CORS模式（on, off）
+  whitelist:
+    - allow-origin: "http://localhost:3000" # 允许的源
+      allow-methods: "GET,POST,PUT,DELETE,OPTIONS" # 允许的方法
+      allow-headers: "Content-Type,Authorization" # 允许的头部
+      expose-headers: "Content-Length,Access-Control-Allow-Origin" # 暴露的头部
+      allow-credentials: true                   # 是否允许凭据
+    - allow-origin: "http://example.com"       # 允许的源
+      allow-methods: "GET,POST,PUT,DELETE,OPTIONS" # 允许的方法
+      allow-headers: "Content-Type,Authorization" # 允许的头部
+      expose-headers: "Content-Length,Access-Control-Allow-Origin" # 暴露的头部
+      allow-credentials: true                   # 是否允许凭据

@@ -43,19 +43,19 @@ func (i *initApiIgnore) InitializeData(ctx context.Context) (context.Context, er
 		return ctx, system.ErrMissingDBContext
 	}
 	entities := []sysModel.SysIgnoreApi{
-		{Method: "GET", Path: "/swagger/*any"},
-		{Method: "GET", Path: "/api/freshCasbin"},
-		{Method: "GET", Path: "/uploads/file/*filepath"},
-		{Method: "GET", Path: "/health"},
-		{Method: "HEAD", Path: "/uploads/file/*filepath"},
-		{Method: "POST", Path: "/autoCode/llmAuto"},
-		{Method: "POST", Path: "/system/reloadSystem"},
-		{Method: "POST", Path: "/base/login"},
-		{Method: "POST", Path: "/base/captcha"},
-		{Method: "POST", Path: "/init/initdb"},
-		{Method: "POST", Path: "/init/checkdb"},
-		{Method: "GET", Path: "/info/getInfoDataSource"},
-		{Method: "GET", Path: "/info/getInfoPublic"},
+		//{Method: "GET", Path: "/swagger/*any"},
+		//{Method: "GET", Path: "/api/freshCasbin"},
+		//{Method: "GET", Path: "/uploads/file/*filepath"},
+		//{Method: "GET", Path: "/health"},
+		//{Method: "HEAD", Path: "/uploads/file/*filepath"},
+		//{Method: "POST", Path: "/autoCode/llmAuto"},
+		//{Method: "POST", Path: "/system/reloadSystem"},
+		//{Method: "POST", Path: "/base/login"},
+		//{Method: "POST", Path: "/base/captcha"},
+		//{Method: "POST", Path: "/init/initdb"},
+		//{Method: "POST", Path: "/init/checkdb"},
+		//{Method: "GET", Path: "/info/getInfoDataSource"},
+		//{Method: "GET", Path: "/info/getInfoPublic"},
 	}
 	if err := db.Create(&entities).Error; err != nil {
 		return ctx, errors.Wrap(err, sysModel.SysIgnoreApi{}.TableName()+"表数据初始化失败!")
