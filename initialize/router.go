@@ -6,7 +6,6 @@ import (
 
 	"admin_base_server/docs"
 	"admin_base_server/global"
-	"admin_base_server/middleware"
 	"admin_base_server/router"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -64,7 +63,8 @@ func Routers() *gin.Engine {
 	PublicGroup := Router.Group(global.GVA_CONFIG.System.RouterPrefix)
 	PrivateGroup := Router.Group(global.GVA_CONFIG.System.RouterPrefix)
 
-	PrivateGroup.Use(middleware.JWTAuth()).Use(middleware.CasbinHandler())
+	//todo 做登录时添加上
+	//PrivateGroup.Use(middleware.JWTAuth()).Use(middleware.CasbinHandler())
 
 	{
 		// 健康监测
