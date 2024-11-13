@@ -1,11 +1,11 @@
-package warehouse
+package topic
 
 import (
 	"gorm.io/gorm"
 	"time"
 )
 
-type Warehouse struct {
+type Topic struct {
 	ID         int       `gorm:"primaryKey;autoIncrement" json:"id"`
 	Title      string    `gorm:"type:varchar(10000);not null" json:"title"`
 	Cate       int       `gorm:"not null" json:"cate"`
@@ -18,10 +18,10 @@ type Warehouse struct {
 	UpdateTime time.Time `gorm:"default:CURRENT_TIMESTAMP;update:CURRENT_TIMESTAMP" json:"update_time"`
 }
 
-func (Warehouse) TableName() string {
-	return "warehouse"
+func (Topic) TableName() string {
+	return "topic"
 }
 
-func AutoMigrateWarehouse(db *gorm.DB) error {
-	return db.AutoMigrate(&WarehouseGroup{})
+func AutoMigrateTopic(db *gorm.DB) error {
+	return db.AutoMigrate(&TopicGroup{})
 }

@@ -31,8 +31,8 @@ redis:
 #  password: "your-password"        # SMTP密码
 
 system:
-  db-type: "mysql"               # 环境（development, production）
   addr: 8888                       # 服务端口
+  db-type: "mysql"               # 环境（development, production）
 
 captcha:
   keyLong: 6                      # 验证码长度
