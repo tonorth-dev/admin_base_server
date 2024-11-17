@@ -17,7 +17,6 @@ type TopicRouter struct{}
 func (e *TopicRouter) InitTopicRouter(Router *gin.RouterGroup) {
 
 	topicAPI = topic.NewTopicAPI(qservice.NewTopicService())
-	topicGroupAPI = topic.NewTopicGroupAPI(qservice.NewTopicGroupService())
 
 	topicRouter := Router.Group("admin/topic")
 	{
@@ -97,63 +96,5 @@ func (e *TopicRouter) InitTopicRouter(Router *gin.RouterGroup) {
 		// @Failure 400 {object} models.Response
 		// @Router /topic/export [get]
 		topicRouter.GET("/topic/export", topicAPI.ExportTopics)
-	}
-	{
-		// 题组路由
-		// @Summary 创建题组
-		// @Description 创建一个新的题组
-		// @Tags 题组管理
-		// @Accept json
-		// @Produce json
-		// @Param body body models.TopicGroup true "题组信息"
-		// @Success 200 {object} models.Response
-		// @Failure 400 {object} models.Response
-		// @Router /topic-group [post]
-		topicRouter.POST("/topic-group", topicGroupAPI.CreateTopicGroup)
-
-		// @Summary 获取题组详情
-		// @Description 根据ID获取题组详情
-		// @Tags 题组管理
-		// @Accept json
-		// @Produce json
-		// @Param id path string true "题组ID"
-		// @Success 200 {object} models.TopicGroup
-		// @Failure 400 {object} models.Response
-		// @Router /topic-group/{id} [get]
-		topicRouter.GET("/topic-group/:id", topicGroupAPI.GetTopicGroupByID)
-
-		// @Summary 更新题组
-		// @Description 根据ID更新题组信息
-		// @Tags 题组管理
-		// @Accept json
-		// @Produce json
-		// @Param id path string true "题组ID"
-		// @Param body body models.TopicGroup true "题组信息"
-		// @Success 200 {object} models.Response
-		// @Failure 400 {object} models.Response
-		// @Router /topic-group/{id} [put]
-		topicRouter.PUT("/topic-group/:id", topicGroupAPI.UpdateTopicGroup)
-
-		// @Summary 删除题组
-		// @Description 根据ID删除题组
-		// @Tags 题组管理
-		// @Accept json
-		// @Produce json
-		// @Param id path string true "题组ID"
-		// @Success 200 {object} models.Response
-		// @Failure 400 {object} models.Response
-		// @Router /topic-group/{id} [delete]
-		topicRouter.DELETE("/topic-group/:id", topicGroupAPI.DeleteTopicGroup)
-
-		// @Summary 导出题组为PDF
-		// @Description 根据ID导出题组为PDF
-		// @Tags 题组管理
-		// @Accept json
-		// @Produce octet-stream
-		// @Param id path string true "题组ID"
-		// @Success 200 {file} file
-		// @Failure 400 {object} models.Response
-		// @Router /topic-group/export-pdf/{id} [get]
-		topicRouter.GET("/topic-group/export-pdf/:id", topicGroupAPI.ExportTopicGroupPDF)
 	}
 }

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"admin_base_server/router/book"
 	"admin_base_server/router/config"
 	"admin_base_server/router/example"
 	"admin_base_server/router/major"
@@ -16,4 +17,5 @@ type RouterGroup struct {
 	Topic   topic.RouterGroup
 	Major   major.RouterGroup
 	Config  config.RouterGroup
+	Book    book.RouterGroup
 }

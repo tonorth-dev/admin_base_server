@@ -1,4 +1,4 @@
-package topic
+package config
 
 import (
 	"admin_base_server/global"
@@ -30,6 +30,46 @@ func (s *ConfigService) GetActiveConfig(name string) (map[string]any, error) {
 	}
 
 	return attr, nil
+}
+
+func (s *ConfigService) GetQuestionCate() (*config.QuestionCate, error) {
+	var (
+		cates *config.QuestionCate
+		bc    *config.Config
+	)
+	if err := global.GVA_DB.Where("name = ? AND status = ?", "question_cate", 1).First(&bc).Error; err != nil {
+		return nil, err
+	}
+
+	if bc == nil || string(bc.Attr) == "" {
+		return nil, errors.New("未找到问题类型相关的配置")
+	}
+
+	if err := json.Unmarshal(bc.Attr, &cates); err != nil {
+		return nil, err
+	}
+
+	return cates, nil
+}
+
+func (s *ConfigService) GetQuestionLevel() (*config.QuestionLevel, error) {
+	var (
+		levels *config.QuestionLevel
+		bc     *config.Config
+	)
+	if err := global.GVA_DB.Where("name = ? AND status = ?", "question_level", 1).First(&bc).Error; err != nil {
+		return nil, err
+	}
+
+	if bc == nil || string(bc.Attr) == "" {
+		return nil, errors.New("未找到问题难度相关的配置")
+	}
+
+	if err := json.Unmarshal(bc.Attr, &levels); err != nil {
+		return nil, err
+	}
+
+	return levels, nil
 }
 
 func (s *ConfigService) UpdateConfig(name string, newAttr map[string]any) error {

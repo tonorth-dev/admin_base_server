@@ -41,11 +41,12 @@ func (h *TopicAPI) CreateTopic(c *gin.Context) {
 func (h *TopicAPI) GetTopicList(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
-	search := strings.TrimSpace(c.Query("search"))
-	cate := cast.ToInt(c.Query("cate"))
+	search := strings.TrimSpace(c.Query("keyword"))
+	cate := strings.TrimSpace(c.Query("cate"))
+	level := strings.TrimSpace(c.Query("level"))
 	majorID := cast.ToInt(c.Query("major_id"))
 
-	topics, total, err := h.Service.GetTopicList(page, pageSize, search, cate, majorID)
+	topics, total, err := h.Service.GetTopicList(page, pageSize, search, cate, level, majorID, []int{})
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -153,22 +154,22 @@ func (h *TopicAPI) BatchImportTopics(c *gin.Context) {
 	var topics []qmodel.Topic
 	for _, record := range records {
 		// 防止XSS攻击，对输入数据进行HTML转义
-		title := html.EscapeString(record[0])
-		cate := cast.ToInt(record[1])
-		answer := html.EscapeString(record[2])
-		author := html.EscapeString(record[3])
-		majorID := cast.ToInt(record[4])
-		majorName := html.EscapeString(record[5])
-		tag := html.EscapeString(record[6])
+		title := strings.TrimSpace(html.EscapeString(record[0]))
+		cate := strings.TrimSpace(html.EscapeString(record[1]))
+		level := strings.TrimSpace(html.EscapeString(record[2]))
+		answer := strings.TrimSpace(html.EscapeString(record[3]))
+		author := strings.TrimSpace(html.EscapeString(record[4]))
+		majorID := cast.ToInt(record[5])
+		tag := strings.TrimSpace(html.EscapeString(record[6]))
 
 		topic := qmodel.Topic{
-			Title:     title,
-			Cate:      cate,
-			Answer:    answer,
-			Author:    author,
-			MajorID:   majorID,
-			MajorName: majorName,
-			Tag:       tag,
+			Title:   title,
+			Cate:    cate,
+			Level:   level,
+			Answer:  answer,
+			Author:  author,
+			MajorID: majorID,
+			Tag:     tag,
 		}
 		topics = append(topics, topic)
 	}
@@ -196,15 +197,12 @@ func (h *TopicAPI) ExportTopics(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 	search := strings.TrimSpace(c.Query("search"))
-	cateStr := strings.TrimSpace(c.Query("cate"))
-	majorIDStr := strings.TrimSpace(c.Query("major_id"))
-
-	// 将字符串参数转换为整数
-	cate := cast.ToInt(cateStr)
-	majorID := cast.ToInt(majorIDStr)
+	level := strings.TrimSpace(c.Query("level"))
+	cate := strings.TrimSpace(c.Query("cate"))
+	majorID := cast.ToInt(c.Query("major_id"))
 
 	// 调用服务层方法获取符合条件的题目列表
-	topics, _, err := h.Service.GetTopicList(page, pageSize, search, cate, majorID)
+	topics, _, err := h.Service.GetTopicList(page, pageSize, search, cate, level, majorID, []int{})
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return

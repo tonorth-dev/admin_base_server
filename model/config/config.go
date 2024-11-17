@@ -21,6 +21,20 @@ type RConfig struct {
 	Status int            `gorm:"default:true" json:"status"`
 }
 
+type QuestionCate struct {
+	Cates []struct {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+	} `json:"cates"`
+}
+
+type QuestionLevel struct {
+	Levels []struct {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+	} `json:"levels"`
+}
+
 // TableName 返回表名
 func (Config) TableName() string {
 	return "business_config"

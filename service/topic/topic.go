@@ -3,48 +3,117 @@ package topic
 import (
 	"admin_base_server/global"
 	"admin_base_server/model/topic"
+	"admin_base_server/service/config"
+	"admin_base_server/service/major"
+	"errors"
 	"gorm.io/gorm"
 	"strings"
 )
 
 type TopicService struct {
-	DB *gorm.DB
+	DB            *gorm.DB
+	configService *config.ConfigService
+	majorService  *major.MajorService
 }
 
 func NewTopicService() *TopicService {
-	return &TopicService{DB: global.GVA_DB}
+	return &TopicService{
+		DB:            global.GVA_DB,
+		configService: config.NewConfigService(),
+		majorService:  major.NewMajorService(),
+	}
 }
 
 func (s *TopicService) CreateTopic(q *topic.Topic) error {
+	questionCates, err := s.configService.GetQuestionCate()
+	if err != nil {
+		return err
+	}
+	found := false
+	for _, v := range questionCates.Cates {
+		q.Cate = v.Name
+		found = true
+		break
+	}
+	if !found {
+		return errors.New("问题类目未定义")
+	}
+
+	questionLevels, err := s.configService.GetQuestionLevel()
+	if err != nil {
+		return err
+	}
+
+	found = false
+	for _, v := range questionLevels.Levels {
+		q.Level = v.Name
+		found = true
+		break
+	}
+	if !found {
+		return errors.New("问题等级未定义")
+	}
+
 	return s.DB.Create(q).Error
 }
 
-func (s *TopicService) GetTopicByID(id int) (*topic.Topic, error) {
-	var q topic.Topic
+func (s *TopicService) GetTopicByID(id int) (*topic.RTopic, error) {
+	var (
+		q *topic.Topic
+		r *topic.RTopic
+	)
 	if err := s.DB.First(&q, id).Error; err != nil {
 		return nil, err
 	}
-	return &q, nil
+
+	cateMap, levelMap, err := s.getConfigMap()
+	if err != nil {
+		return nil, err
+	}
+
+	r = &topic.RTopic{
+		Title:      q.Title,
+		Author:     q.Author,
+		Answer:     q.Answer,
+		Tag:        q.Tag,
+		Level:      q.Level,
+		LevelName:  levelMap[q.Level],
+		Cate:       q.Cate,
+		CateName:   cateMap[q.Cate],
+		MajorID:    q.MajorID,
+		CreateTime: q.CreateTime,
+		UpdateTime: q.UpdateTime,
+	}
+	return r, nil
 }
 
-func (s *TopicService) GetTopicList(page, pageSize int, search string, cate, majorID int) ([]topic.Topic, int64, error) {
-	var topics []topic.Topic
-	var total int64
+func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level string, majorID int, idNotIn []int) ([]topic.RTopic, int64, error) {
+	var (
+		total   int64
+		topics  []topic.Topic
+		rTopics []topic.RTopic
+	)
 
 	db := global.GVA_DB.Model(&topic.Topic{})
 
 	// 搜索条件
-	if search != "" {
-		searchQuery := "%" + strings.ToLower(search) + "%"
+	if keyword != "" {
+		searchQuery := "%" + strings.ToLower(keyword) + "%"
 		db = db.Where("LOWER(title) LIKE ? OR LOWER(author) LIKE ? OR LOWER(answer) LIKE ?", searchQuery, searchQuery, searchQuery)
 	}
 
 	// 筛选条件
-	if cate != 0 {
+	if level != "" {
+		db = db.Where("level = ?", level)
+	}
+	if cate != "" {
 		db = db.Where("cate = ?", cate)
 	}
 	if majorID != 0 {
 		db = db.Where("major_id = ?", majorID)
+	}
+	if len(idNotIn) > 0 {
+		db = db.Where("id NOT IN (?)", idNotIn)
 	}
 
 	// 分页
@@ -55,7 +124,34 @@ func (s *TopicService) GetTopicList(page, pageSize int, search string, cate, maj
 		return nil, 0, err
 	}
 
-	return topics, total, nil
+	cateMap, levelMap, err := s.getConfigMap()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	majorMap, err := s.getMajorMap()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for _, v := range topics {
+		rTopics = append(rTopics, topic.RTopic{
+			Title:      v.Title,
+			Author:     v.Author,
+			Answer:     v.Answer,
+			Tag:        v.Tag,
+			Level:      v.Level,
+			LevelName:  levelMap[v.Level],
+			Cate:       v.Cate,
+			CateName:   cateMap[v.Cate],
+			MajorID:    v.MajorID,
+			MajorName:  majorMap[v.MajorID],
+			CreateTime: v.CreateTime,
+			UpdateTime: v.UpdateTime,
+		})
+	}
+
+	return rTopics, total, nil
 }
 
 func (s *TopicService) UpdateTopic(id int, q *topic.Topic) error {
@@ -76,4 +172,52 @@ func (s *TopicService) ExportTopics() ([]topic.Topic, error) {
 		return nil, err
 	}
 	return topics, nil
+}
+
+func (s *TopicService) getConfigMap() (map[string]string, map[string]string, error) {
+	cateMap := make(map[string]string)
+	levelMap := make(map[string]string)
+
+	questionCates, err := s.configService.GetQuestionCate()
+	if err != nil {
+		return nil, nil, err
+	}
+	if questionCates == nil || len(questionCates.Cates) == 0 {
+		return nil, nil, errors.New("问题类型配置错误")
+	}
+
+	questionLevels, err := s.configService.GetQuestionLevel()
+	if err != nil {
+		return nil, nil, err
+	}
+	if questionLevels == nil || len(questionLevels.Levels) == 0 {
+		return nil, nil, errors.New("问题难度配置错误")
+	}
+
+	for _, v := range questionCates.Cates {
+		cateMap[v.Id] = v.Name
+	}
+	for _, v := range questionLevels.Levels {
+		levelMap[v.Id] = v.Name
+	}
+
+	return cateMap, levelMap, nil
+}
+
+func (s *TopicService) getMajorMap() (map[int]string, error) {
+	majorMap := make(map[int]string)
+
+	majors, _, err := s.majorService.GetMajorList(1, 10000, "")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(majors) == 0 {
+		return nil, errors.New("专业配置错误")
+	}
+	for _, v := range majors {
+		majorMap[v.ID] = v.MajorName
+	}
+
+	return majorMap, nil
 }

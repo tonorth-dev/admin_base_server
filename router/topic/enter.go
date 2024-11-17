@@ -9,6 +9,5 @@ type RouterGroup struct {
 }
 
 var (
-	topicAPI      *topic.TopicAPI
-	topicGroupAPI *topic.TopicGroupAPI
+	topicAPI *topic.TopicAPI
 )

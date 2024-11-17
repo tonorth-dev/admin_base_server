@@ -43,6 +43,7 @@ func Routers() *gin.Engine {
 	topicRouter := router.RouterGroupApp.Topic
 	majorRouter := router.RouterGroupApp.Major
 	configRouter := router.RouterGroupApp.Config
+	bookRouter := router.RouterGroupApp.Book
 	// 如果想要不使用nginx代理前端网页，可以修改 web/.env.production 下的
 	// VUE_APP_BASE_API = /
 	// VUE_APP_BASE_PATH = http://localhost
@@ -97,7 +98,8 @@ func Routers() *gin.Engine {
 		exampleRouter.InitFileUploadAndDownloadRouter(PrivateGroup) // 文件上传下载功能路由
 		topicRouter.InitTopicRouter(PrivateGroup)                   // 问题库路由
 		majorRouter.InitMajorRouter(PrivateGroup)                   // 专业路由
-		configRouter.InitConfigRouter(PrivateGroup)                 // 专业路由
+		configRouter.InitConfigRouter(PrivateGroup)                 // 配置路由
+		bookRouter.InitBookRouter(PrivateGroup)                     // 题本路由
 	}
 
 	//插件路由安装
