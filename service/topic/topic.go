@@ -2,6 +2,7 @@ package topic
 
 import (
 	"admin_base_server/global"
+	stable "admin_base_server/model/const"
 	"admin_base_server/model/topic"
 	"admin_base_server/service/config"
 	"admin_base_server/service/major"
@@ -72,6 +73,7 @@ func (s *TopicService) GetTopicByID(id int) (*topic.RTopic, error) {
 	}
 
 	r = &topic.RTopic{
+		ID:         q.ID,
 		Title:      q.Title,
 		Author:     q.Author,
 		Answer:     q.Answer,
@@ -87,7 +89,7 @@ func (s *TopicService) GetTopicByID(id int) (*topic.RTopic, error) {
 	return r, nil
 }
 
-func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level string, majorID int, idNotIn []int) ([]topic.RTopic, int64, error) {
+func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level string, majorID int) ([]topic.RTopic, int64, error) {
 	var (
 		total   int64
 		topics  []topic.Topic
@@ -112,15 +114,13 @@ func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level str
 	if majorID != 0 {
 		db = db.Where("major_id = ?", majorID)
 	}
-	if len(idNotIn) > 0 {
-		db = db.Where("id NOT IN (?)", idNotIn)
-	}
+	db = db.Where("status =", stable.StatusEnabled)
 
 	// 分页
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&topics).Error; err != nil {
+	if err := db.Order("id DESC").Offset((page - 1) * pageSize).Limit(pageSize).Find(&topics).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -136,6 +136,7 @@ func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level str
 
 	for _, v := range topics {
 		rTopics = append(rTopics, topic.RTopic{
+			ID:         v.ID,
 			Title:      v.Title,
 			Author:     v.Author,
 			Answer:     v.Answer,
@@ -158,10 +159,11 @@ func (s *TopicService) UpdateTopic(id int, q *topic.Topic) error {
 	return s.DB.Model(&topic.Topic{}).Where("id = ?", id).Updates(q).Error
 }
 
-func (s *TopicService) DeleteTopic(id int) error {
-	return s.DB.Delete(&topic.Topic{}, id).Error
+func (s *TopicService) DeleteTopic(ids []int) error {
+	return s.DB.Delete(&topic.Topic{}, "id IN (?)", ids).Error
 }
 
+// todo 加上校验逻辑
 func (s *TopicService) BatchImportTopics(topics []topic.Topic) error {
 	return s.DB.Create(&topics).Error
 }

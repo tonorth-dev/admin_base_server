@@ -3,21 +3,25 @@ package book
 import (
 	"admin_base_server/global"
 	"admin_base_server/model/book"
+	"admin_base_server/model/topic"
 	"admin_base_server/service/config"
 	"admin_base_server/service/major"
-	"admin_base_server/service/topic"
+	stopic "admin_base_server/service/topic"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/spf13/cast"
 	"gorm.io/gorm"
+	"strconv"
 	"strings"
+	"sync"
 )
 
 type BookService struct {
 	DB            *gorm.DB
 	configService *config.ConfigService
 	majorService  *major.MajorService
-	topicService  *topic.TopicService
+	topicService  *stopic.TopicService
 }
 
 func NewBookService() *BookService {
@@ -25,7 +29,7 @@ func NewBookService() *BookService {
 		DB:            global.GVA_DB,
 		configService: config.NewConfigService(),
 		majorService:  major.NewMajorService(),
-		topicService:  topic.NewTopicService(),
+		topicService:  stopic.NewTopicService(),
 	}
 }
 
@@ -56,14 +60,17 @@ func (s *BookService) CreateBook(q *book.RBook) error {
 		return err
 	}
 
-	bookModel := book.Book{
+	componentJSON, _ := json.Marshal(q.Component)
+	questionsJSON, _ := json.Marshal(questions)
+
+	bookModel := &book.Book{
 		ID:              q.ID,
 		Name:            q.Name,
 		MajorID:         q.MajorID,
 		Level:           q.Level,
-		Component:       q.Component,
+		Component:       componentJSON,
 		UnitNumber:      q.UnitNumber,
-		Questions:       questions,
+		Questions:       questionsJSON,
 		QuestionsNumber: questionsNumber,
 		Creator:         q.Creator,
 		TemplateID:      q.TemplateID,
@@ -81,7 +88,7 @@ func (s *BookService) GetBookByID(id int) (*book.RBook, error) {
 	if err := s.DB.First(&q, id).Error; err != nil {
 		return nil, err
 	}
-	_, levelMap, err := s.getConfigMap()
+	cateMap, levelMap, err := s.getConfigMap()
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +110,8 @@ func (s *BookService) GetBookByID(id int) (*book.RBook, error) {
 	if err != nil {
 		return nil, err
 	}
+	componentDesc, _ := s.generateComponentDesc(component, cateMap)
+	questionsDesc, _ := s.generateQuestionsDesc(questions, cateMap)
 
 	r = &book.RBook{
 		ID:              q.ID,
@@ -112,9 +121,11 @@ func (s *BookService) GetBookByID(id int) (*book.RBook, error) {
 		Level:           q.Level,
 		LevelName:       levelMap[q.Level],
 		Component:       component,
+		ComponentDesc:   componentDesc,
 		UnitNumber:      q.UnitNumber,
 		Questions:       questions,
 		QuestionsNumber: q.QuestionsNumber,
+		QuestionsDesc:   questionsDesc,
 		Creator:         q.Creator,
 		TemplateID:      q.TemplateID,
 		TemplateName:    "demo",
@@ -152,11 +163,11 @@ func (s *BookService) GetBookList(page, pageSize int, keyword, level string, maj
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&books).Error; err != nil {
+	if err := db.Order("id DESC").Offset((page - 1) * pageSize).Limit(pageSize).Find(&books).Error; err != nil {
 		return nil, 0, err
 	}
 
-	_, levelMap, err := s.getConfigMap()
+	cateMap, levelMap, err := s.getConfigMap()
 	if err != nil {
 		return nil, 0, err
 	}
@@ -179,17 +190,21 @@ func (s *BookService) GetBookList(page, pageSize int, keyword, level string, maj
 		if err != nil {
 			return nil, 0, err
 		}
+		componentDesc, _ := s.generateComponentDesc(component, cateMap)
+		//questionsDesc, _ := s.generateQuestionsDesc(questions, cateMap)
 
 		rBooks = append(rBooks, book.RBook{
-			ID:              v.ID,
-			Name:            v.Name,
-			MajorID:         v.MajorID,
-			MajorName:       majorMap[v.MajorID],
-			Level:           v.Level,
-			LevelName:       levelMap[v.Level],
-			Component:       component,
-			UnitNumber:      v.UnitNumber,
-			Questions:       questions,
+			ID:            v.ID,
+			Name:          v.Name,
+			MajorID:       v.MajorID,
+			MajorName:     majorMap[v.MajorID],
+			Level:         v.Level,
+			LevelName:     levelMap[v.Level],
+			Component:     component,
+			ComponentDesc: componentDesc,
+			UnitNumber:    v.UnitNumber,
+			Questions:     questions,
+			//QuestionsDesc:   questionsDesc,
 			QuestionsNumber: v.QuestionsNumber,
 			Creator:         v.Creator,
 			TemplateID:      v.TemplateID,
@@ -258,27 +273,91 @@ func (s *BookService) getMajorMap() (map[int]string, error) {
 func (s *BookService) generateBook(level string, majorId int, component []*book.Component, number int) (questions [][]*book.Questions, questionNumber int, err error) {
 	var (
 		questionIds []int
+		wg          sync.WaitGroup
+		mu          sync.Mutex
+		errs        []error
 	)
+
 	for i := 0; i < number; i++ {
-		var page []*book.Questions
-		for _, v := range component {
-			var ids []int
-			qs, _, err := s.topicService.GetTopicList(1, v.Number, "", v.Key, level, majorId, questionIds)
-			if err != nil {
-				return questions, questionNumber, err
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			var page []*book.Questions
+			localQuestionIds := make([]int, len(questionIds))
+			copy(localQuestionIds, questionIds)
+
+			for _, v := range component {
+				var ids []int
+				qs, _, err := s.topicService.GetTopicList(1, v.Number, "", v.Key, level, majorId, localQuestionIds)
+				if err != nil {
+					mu.Lock()
+					errs = append(errs, err)
+					mu.Unlock()
+					return
+				}
+				for _, q := range qs {
+					ids = append(ids, q.ID)
+				}
+				page = append(page, &book.Questions{
+					Key: v.Key,
+					Ids: ids,
+				})
+				localQuestionIds = append(localQuestionIds, ids...)
 			}
-			for _, q := range qs {
-				ids = append(ids, q.ID)
-			}
-			page = append(page, &book.Questions{
-				Key: v.Key,
-				Ids: ids,
-			})
-			questionIds = append(questionIds, ids...)
-		}
-		questions = append(questions, page)
+
+			mu.Lock()
+			questionIds = append(questionIds, localQuestionIds[len(questionIds):]...)
+			questions = append(questions, page)
+			mu.Unlock()
+		}(i)
 	}
+
+	wg.Wait()
+
+	if len(errs) > 0 {
+		return questions, questionNumber, errors.New("one or more errors occurred during processing")
+	}
+
 	questionNumber = len(questionIds)
+	return
+}
+
+func (s *BookService) generateComponentDesc(component []*book.Component, catMap map[string]string) ([]string, error) {
+	var (
+		desc []string
+	)
+	for _, v := range component {
+		desc = append(desc, catMap[v.Key]+"：数量"+strconv.Itoa(v.Number))
+	}
+
+	return desc, nil
+}
+
+func (s *BookService) generateQuestionsDesc(questions [][]*book.Questions, catMap map[string]string) (qds []*book.QuestionsDetails, err error) {
+	if len(questions) == 0 {
+		return nil, errors.New("练习题目为空")
+	}
+	for key, val := range questions {
+		var qs []*book.QuestionsDetail
+		for _, v := range val {
+			qd := &book.QuestionsDetail{
+				CateName: catMap[v.Key],
+				List:     make([]*topic.RTopic, 0),
+			}
+			for _, id := range v.Ids {
+				q, err := s.topicService.GetTopicByID(id)
+				if err != nil {
+					return nil, err
+				}
+				qd.List = append(qd.List, q)
+			}
+			qs = append(qs, qd)
+		}
+		qds = append(qds, &book.QuestionsDetails{
+			Title: fmt.Sprintf("第%d节", key+1),
+			Data:  qs,
+		})
+	}
 
 	return
 }

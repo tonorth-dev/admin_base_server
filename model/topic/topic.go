@@ -14,6 +14,7 @@ type Topic struct {
 	Author     string    `gorm:"type:varchar(100);not null" json:"author"`
 	MajorID    int       `gorm:"not null" json:"major_id"`
 	Tag        string    `gorm:"type:varchar(255)" json:"tag"`
+	Status     int       `gorm:"not null" json:"status" validate:"required,oneof=1 2"`
 	CreateTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"create_time"`
 	UpdateTime time.Time `gorm:"default:CURRENT_TIMESTAMP;update:CURRENT_TIMESTAMP" json:"update_time"`
 }
@@ -30,6 +31,7 @@ type RTopic struct {
 	MajorID    int       `gorm:"not null" json:"major_id"`
 	MajorName  string    `gorm:"not null" json:"major_name"`
 	Tag        string    `gorm:"type:varchar(255)" json:"tag"`
+	Status     int       `gorm:"not null" json:"status"`
 	CreateTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"create_time"`
 	UpdateTime time.Time `gorm:"default:CURRENT_TIMESTAMP;update:CURRENT_TIMESTAMP" json:"update_time"`
 }

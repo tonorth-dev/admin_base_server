@@ -46,7 +46,7 @@ func (h *TopicAPI) GetTopicList(c *gin.Context) {
 	level := strings.TrimSpace(c.Query("level"))
 	majorID := cast.ToInt(c.Query("major_id"))
 
-	topics, total, err := h.Service.GetTopicList(page, pageSize, search, cate, level, majorID, []int{})
+	topics, total, err := h.Service.GetTopicList(page, pageSize, search, cate, level, majorID)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -94,21 +94,37 @@ func (h *TopicAPI) UpdateTopic(c *gin.Context) {
 }
 
 func (h *TopicAPI) DeleteTopic(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	idsStr := c.Param("id")
+	ids := parseIDs(idsStr)
 
 	// 检查试题是否存在
-	existingTopic, err := h.Service.GetTopicByID(id)
-	if err != nil || existingTopic == nil {
-		global.GVA_LOG.Error("试题未找到!", zap.Error(err))
-		response.FailWithMessage("试题未找到", c)
-		return
+	for _, id := range ids {
+		existingTopic, err := h.Service.GetTopicByID(id)
+		if err != nil || existingTopic == nil {
+			global.GVA_LOG.Error("试题未找到!", zap.Error(err))
+			response.FailWithMessage("部分试题未找到", c)
+			return
+		}
 	}
 
-	if err := h.Service.DeleteTopic(id); err != nil {
+	if err := h.Service.DeleteTopic(ids); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithMessage("试题删除成功", c)
+}
+
+func parseIDs(idsStr string) []int {
+	ids := make([]int, 0)
+	for _, idStr := range strings.Split(idsStr, ",") {
+		id, err := strconv.Atoi(strings.TrimSpace(idStr))
+		if err != nil {
+			global.GVA_LOG.Error("无效的ID", zap.Error(err))
+			continue
+		}
+		ids = append(ids, id)
+	}
+	return ids
 }
 
 func (h *TopicAPI) BatchImportTopics(c *gin.Context) {
@@ -145,8 +161,8 @@ func (h *TopicAPI) BatchImportTopics(c *gin.Context) {
 	}
 
 	// 检查记录数量
-	if len(records) > 2000 {
-		response.FailWithMessage("内容条数超过2000行", c)
+	if len(records) > 5000 {
+		response.FailWithMessage("内容条数超过5000行", c)
 		return
 	}
 
@@ -154,13 +170,13 @@ func (h *TopicAPI) BatchImportTopics(c *gin.Context) {
 	var topics []qmodel.Topic
 	for _, record := range records {
 		// 防止XSS攻击，对输入数据进行HTML转义
-		title := strings.TrimSpace(html.EscapeString(record[0]))
-		cate := strings.TrimSpace(html.EscapeString(record[1]))
-		level := strings.TrimSpace(html.EscapeString(record[2]))
+		cate := strings.TrimSpace(html.EscapeString(record[0]))
+		level := strings.TrimSpace(html.EscapeString(record[1]))
+		title := strings.TrimSpace(html.EscapeString(record[2]))
 		answer := strings.TrimSpace(html.EscapeString(record[3]))
-		author := strings.TrimSpace(html.EscapeString(record[4]))
-		majorID := cast.ToInt(record[5])
-		tag := strings.TrimSpace(html.EscapeString(record[6]))
+		majorID := cast.ToInt(record[4])
+		tag := strings.TrimSpace(html.EscapeString(record[5]))
+		author := strings.TrimSpace(html.EscapeString(record[6]))
 
 		topic := qmodel.Topic{
 			Title:   title,

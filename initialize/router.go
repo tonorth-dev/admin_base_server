@@ -100,6 +100,7 @@ func Routers() *gin.Engine {
 		majorRouter.InitMajorRouter(PrivateGroup)                   // 专业路由
 		configRouter.InitConfigRouter(PrivateGroup)                 // 配置路由
 		bookRouter.InitBookRouter(PrivateGroup)                     // 题本路由
+		bookRouter.InitTemplateRouter(PrivateGroup)                 // 题本路由
 	}
 
 	//插件路由安装

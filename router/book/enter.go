@@ -6,8 +6,10 @@ import (
 
 type RouterGroup struct {
 	BookRouter
+	TemplateRouter
 }
 
 var (
-	bookAPI *book.BookAPI
+	bookAPI     *book.BookAPI
+	templateAPI *book.TemplateAPI
 )
