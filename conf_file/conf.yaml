@@ -7,7 +7,7 @@ jwt:
   issuer: "your-app-name"       # JWT签发者
 
 zap:
-  level: "info"                 # 日志级别（debug, info, warn, error, fatal, panic）
+  level: "debug"                 # 日志级别（debug, info, warn, error, fatal, panic）
   prefix: "admin_server"           # 日志文件名
   format: ""                 # 输出
   director: "./log"               # 最多保留多少个旧日志文件

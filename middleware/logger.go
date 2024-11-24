@@ -2,88 +2,112 @@ package middleware
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
-	"io"
-	"strings"
+	"github.com/google/uuid"
+	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-// LogLayout 日志layout
-type LogLayout struct {
-	Time      time.Time
-	Metadata  map[string]interface{} // 存储自定义原数据
-	Path      string                 // 访问路径
-	Query     string                 // 携带query
-	Body      string                 // 携带body数据
-	IP        string                 // ip地址
-	UserAgent string                 // 代理
-	Error     string                 // 错误
-	Cost      time.Duration          // 花费时间
-	Source    string                 // 来源
-}
+var logger *zap.Logger
 
-type Logger struct {
-	// Filter 用户自定义过滤
-	Filter func(c *gin.Context) bool
-	// FilterKeyword 关键字过滤(key)
-	FilterKeyword func(layout *LogLayout) bool
-	// AuthProcess 鉴权处理
-	AuthProcess func(c *gin.Context, layout *LogLayout)
-	// 日志处理
-	Print func(LogLayout)
-	// Source 服务唯一标识
-	Source string
-}
+func init() {
+	// 配置日志输出到文件
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoder := zapcore.NewJSONEncoder(encoderConfig)
 
-func (l Logger) SetLoggerMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
-		var body []byte
-		if l.Filter != nil && !l.Filter(c) {
-			body, _ = c.GetRawData()
-			// 将原body塞回去
-			c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
-		}
-		c.Next()
-		cost := time.Since(start)
-		layout := LogLayout{
-			Time:      time.Now(),
-			Path:      path,
-			Query:     query,
-			IP:        c.ClientIP(),
-			UserAgent: c.Request.UserAgent(),
-			Error:     strings.TrimRight(c.Errors.ByType(gin.ErrorTypePrivate).String(), "\n"),
-			Cost:      cost,
-			Source:    l.Source,
-		}
-		if l.Filter != nil && !l.Filter(c) {
-			layout.Body = string(body)
-		}
-		if l.AuthProcess != nil {
-			// 处理鉴权需要的信息
-			l.AuthProcess(c, &layout)
-		}
-		if l.FilterKeyword != nil {
-			// 自行判断key/value 脱敏等
-			l.FilterKeyword(&layout)
-		}
-		// 自行处理日志
-		l.Print(layout)
+	file, err := os.OpenFile("./log/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
 	}
+
+	core := zapcore.NewCore(
+		encoder,
+		zapcore.AddSync(file),
+		zap.InfoLevel,
+	)
+
+	logger = zap.New(core)
+	zap.ReplaceGlobals(logger)
 }
 
-func DefaultLogger() gin.HandlerFunc {
-	return Logger{
-		Print: func(layout LogLayout) {
-			// 标准输出,k8s做收集
-			v, _ := json.Marshal(layout)
-			fmt.Println(string(v))
-		},
-		Source: "GVA",
-	}.SetLoggerMiddleware()
+// ResponseWriterWrapper 用于捕获响应体
+type ResponseWriterWrapper struct {
+	gin.ResponseWriter
+	Body *bytes.Buffer
+}
+
+// Write 实现了 ResponseWriter 接口
+func (r *ResponseWriterWrapper) Write(b []byte) (int, error) {
+	if r.Body == nil {
+		r.Body = &bytes.Buffer{}
+	}
+	r.Body.Write(b)
+	return r.ResponseWriter.Write(b)
+}
+
+// LoggerMiddleware 记录请求和响应的日志
+func LoggerMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 生成唯一标识符
+		traceID := uuid.New().String()
+		c.Set("trace_id", traceID)
+
+		// 记录请求开始时间
+		start := time.Now()
+
+		// 获取请求体
+		reqBody, _ := ioutil.ReadAll(c.Request.Body)
+		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
+
+		// 记录请求信息
+		clientIP := c.ClientIP()
+		method := c.Request.Method
+		path := c.Request.URL.Path
+		userAgent := c.Request.UserAgent()
+		query := c.Request.URL.RawQuery
+		headers := c.Request.Header
+
+		// 记录请求日志
+		logger.Info("request_in_log",
+			zap.String("client_ip", clientIP),
+			zap.Int("status", 0), // 初始状态为 0
+			zap.String("method", method),
+			zap.String("path", path),
+			zap.String("query", query),
+			zap.String("ua", userAgent),
+			zap.Any("headers", headers),
+			zap.String("body", string(reqBody)),
+			zap.Time("request_time", start),
+			zap.String("trace_id", traceID),
+		)
+
+		// 捕获响应体
+		rw := &ResponseWriterWrapper{ResponseWriter: c.Writer}
+		c.Writer = rw
+
+		// 处理请求
+		c.Next()
+
+		// 记录响应信息
+		status := rw.Status()
+		latency := time.Since(start)
+		respBody := rw.Body.String()
+
+		// 记录响应日志
+		logger.Info("request_out_log",
+			zap.String("client_ip", clientIP),
+			zap.Int("status", status),
+			zap.Duration("latency", latency),
+			zap.String("method", method),
+			zap.String("path", path),
+			zap.String("body", respBody),
+			zap.Time("request_time", start),
+			zap.String("trace_id", traceID),
+		)
+	}
 }
