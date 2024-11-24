@@ -25,21 +25,21 @@ type Book struct {
 
 type RBook struct {
 	ID              int                 `json:"id"`
-	Name            string              `json:"name" validate:"required,max=256"`
-	MajorID         int                 `json:"major_id" validate:"required,gte=1"`
-	MajorName       string              `json:"major_name" validate:"max=256"`
-	Level           string              `json:"level" validate:"required,max=100"`
-	LevelName       string              `json:"level_name" validate:"max=100"`
-	Component       []*Component        `json:"component" validate:"required"`
+	Name            string              `json:"name" binding:"required,max=256"`
+	MajorID         int                 `json:"major_id" binding:"required,gte=1"`
+	MajorName       string              `json:"major_name" binding:"max=256"`
+	Level           string              `json:"level" binding:"required,max=100"`
+	LevelName       string              `json:"level_name" binding:"max=100"`
+	Component       []*Component        `json:"component" binding:"required"`
 	ComponentDesc   []string            `json:"component_desc"`
-	UnitNumber      int                 `json:"unit_number" validate:"required,gte=1"`
+	UnitNumber      int                 `json:"unit_number" binding:"required,gte=1"`
 	Questions       [][]*Questions      `json:"questions"`
 	QuestionsDesc   []*QuestionsDetails `json:"questions_desc"`
 	QuestionsNumber int                 `json:"questions_number"`
-	Creator         string              `json:"creator" validate:"required,max=100"`
+	Creator         string              `json:"creator" binding:"required,max=100"`
 	TemplateID      int                 `json:"template_id"`
-	TemplateName    string              `json:"template_name" validate:"max=100"`
-	Tag             string              `json:"tag" validate:"max=512"`
+	TemplateName    string              `json:"template_name" binding:"max=100"`
+	Tag             string              `json:"tag" binding:"max=512"`
 	CreateTime      time.Time           `json:"create_time"`
 	UpdateTime      time.Time           `json:"update_time"`
 }

@@ -5,7 +5,7 @@ type RecordStatus int
 
 const (
 	// StatusInitial 初始状态
-	StatusInitial RecordStatus = iota
+	StatusInitial = iota
 	// StatusDraft 草稿状态
 	StatusDraft
 	// StatusActive 生效中
@@ -13,3 +13,10 @@ const (
 	// StatusDeleted 已删除
 	StatusDeleted
 )
+
+var RecordStatusMap = map[int]string{
+	StatusInitial: "初始状态",
+	StatusDraft:   "草稿",
+	StatusActive:  "已完成",
+	StatusDeleted: "已删除",
+}

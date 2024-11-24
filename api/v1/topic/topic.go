@@ -45,8 +45,9 @@ func (h *TopicAPI) GetTopicList(c *gin.Context) {
 	cate := strings.TrimSpace(c.Query("cate"))
 	level := strings.TrimSpace(c.Query("level"))
 	majorID := cast.ToInt(c.Query("major_id"))
+	status := cast.ToInt(c.Query("status"))
 
-	topics, total, err := h.Service.GetTopicList(page, pageSize, search, cate, level, majorID)
+	topics, total, err := h.Service.GetTopicList(page, pageSize, search, cate, level, majorID, status)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -216,9 +217,10 @@ func (h *TopicAPI) ExportTopics(c *gin.Context) {
 	level := strings.TrimSpace(c.Query("level"))
 	cate := strings.TrimSpace(c.Query("cate"))
 	majorID := cast.ToInt(c.Query("major_id"))
+	status := cast.ToInt(c.Query("status"))
 
 	// 调用服务层方法获取符合条件的题目列表
-	topics, _, err := h.Service.GetTopicList(page, pageSize, search, cate, level, majorID, []int{})
+	topics, _, err := h.Service.GetTopicList(page, pageSize, search, cate, level, majorID, status)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return

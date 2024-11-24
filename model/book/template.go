@@ -1,7 +1,6 @@
 package book
 
 import (
-	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 	"time"
 )
@@ -20,25 +19,19 @@ type Template struct {
 
 type RTemplate struct {
 	ID              int          `json:"id"`
-	Name            string       `json:"name" validate:"required,max=256"`
-	MajorID         int          `json:"major_id" validate:"required,gte=1"`
-	MajorName       string       `json:"major_name" validate:"max=256"`
-	Level           string       `json:"level" validate:"required,max=100"`
-	LevelName       string       `json:"level_name" validate:"max=100"`
-	Component       []*Component `json:"component" validate:"required"`
+	Name            string       `json:"name" binding:"required,max=256"`
+	MajorID         int          `json:"major_id" binding:"required,gte=1"`
+	MajorName       string       `json:"major_name" binding:"max=256"`
+	Level           string       `json:"level" binding:"required,max=100"`
+	LevelName       string       `json:"level_name" binding:"max=100"`
+	Component       []*Component `json:"component" binding:"required"`
 	ComponentDesc   []string     `json:"component_desc"`
-	UnitNumber      int          `json:"unit_number" validate:"required,gte=1"`
+	UnitNumber      int          `json:"unit_number" binding:"required,gte=1"`
 	QuestionsNumber int          `json:"questions_number"`
-	Creator         string       `json:"creator" validate:"required,max=100"`
-	Tag             string       `json:"tag" validate:"max=512"`
+	Creator         string       `json:"creator" binding:"required,max=100"`
+	Tag             string       `json:"tag" binding:"max=512"`
 	CreateTime      time.Time    `json:"create_time"`
 	UpdateTime      time.Time    `json:"update_time"`
-}
-
-// Validate 验证 RTemplate 结构体
-func (rb *RTemplate) Validate() error {
-	validate := validator.New()
-	return validate.Struct(rb)
 }
 
 func (Template) TableName() string {

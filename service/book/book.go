@@ -3,6 +3,7 @@ package book
 import (
 	"admin_base_server/global"
 	"admin_base_server/model/book"
+	stable "admin_base_server/model/const"
 	"admin_base_server/model/topic"
 	"admin_base_server/service/config"
 	"admin_base_server/service/major"
@@ -288,7 +289,7 @@ func (s *BookService) generateBook(level string, majorId int, component []*book.
 
 			for _, v := range component {
 				var ids []int
-				qs, _, err := s.topicService.GetTopicList(1, v.Number, "", v.Key, level, majorId, localQuestionIds)
+				qs, _, err := s.topicService.GetTopicList(1, v.Number, "", v.Key, level, majorId, stable.StatusActive)
 				if err != nil {
 					mu.Lock()
 					errs = append(errs, err)

@@ -26,33 +26,18 @@ func NewTopicService() *TopicService {
 }
 
 func (s *TopicService) CreateTopic(q *topic.Topic) error {
-	questionCates, err := s.configService.GetQuestionCate()
-	if err != nil {
-		return err
-	}
-	found := false
-	for _, v := range questionCates.Cates {
-		q.Cate = v.Name
-		found = true
-		break
-	}
-	if !found {
-		return errors.New("问题类目未定义")
-	}
 
-	questionLevels, err := s.configService.GetQuestionLevel()
+	cateMap, levelMap, err := s.getConfigMap()
 	if err != nil {
 		return err
 	}
 
-	found = false
-	for _, v := range questionLevels.Levels {
-		q.Level = v.Name
-		found = true
-		break
-	}
-	if !found {
+	if _, found := levelMap[q.Level]; !found {
 		return errors.New("问题等级未定义")
+	}
+
+	if _, found := cateMap[q.Cate]; !found {
+		return errors.New("问题类型未定义")
 	}
 
 	return s.DB.Create(q).Error
@@ -83,13 +68,15 @@ func (s *TopicService) GetTopicByID(id int) (*topic.RTopic, error) {
 		Cate:       q.Cate,
 		CateName:   cateMap[q.Cate],
 		MajorID:    q.MajorID,
+		Status:     q.Status,
+		StatusName: stable.RecordStatusMap[q.Status],
 		CreateTime: q.CreateTime,
 		UpdateTime: q.UpdateTime,
 	}
 	return r, nil
 }
 
-func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level string, majorID int) ([]topic.RTopic, int64, error) {
+func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level string, majorID int, status int) ([]topic.RTopic, int64, error) {
 	var (
 		total   int64
 		topics  []topic.Topic
@@ -114,7 +101,11 @@ func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level str
 	if majorID != 0 {
 		db = db.Where("major_id = ?", majorID)
 	}
-	db = db.Where("status =", stable.StatusEnabled)
+	if status == 0 {
+		db = db.Where("status in (?)", []int{stable.StatusActive, stable.StatusDraft})
+	} else {
+		db = db.Where("status = ?", status)
+	}
 
 	// 分页
 	if err := db.Count(&total).Error; err != nil {
@@ -147,6 +138,8 @@ func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level str
 			CateName:   cateMap[v.Cate],
 			MajorID:    v.MajorID,
 			MajorName:  majorMap[v.MajorID],
+			Status:     v.Status,
+			StatusName: stable.RecordStatusMap[v.Status],
 			CreateTime: v.CreateTime,
 			UpdateTime: v.UpdateTime,
 		})
