@@ -91,7 +91,7 @@ func (h *TopicAPI) UpdateTopic(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	response.OkWithData(q, c)
+	response.OkWithData("更新成功", c)
 }
 
 func (h *TopicAPI) DeleteTopic(c *gin.Context) {

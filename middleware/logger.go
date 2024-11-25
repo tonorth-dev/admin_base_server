@@ -95,19 +95,28 @@ func LoggerMiddleware() gin.HandlerFunc {
 
 		// 记录响应信息
 		status := rw.Status()
-		latency := time.Since(start)
+		latency := time.Since(start).Milliseconds()
 		respBody := rw.Body.String()
+
+		// 判断是否发生错误
+		isError := status >= 400
+		errorMessage := ""
+		if isError {
+			errorMessage = respBody
+		}
 
 		// 记录响应日志
 		logger.Info("request_out_log",
 			zap.String("client_ip", clientIP),
 			zap.Int("status", status),
-			zap.Duration("latency", latency),
+			zap.Int64("latency", latency),
 			zap.String("method", method),
 			zap.String("path", path),
 			zap.String("body", respBody),
 			zap.Time("request_time", start),
 			zap.String("trace_id", traceID),
+			zap.Bool("is_error", isError),
+			zap.String("error_message", errorMessage),
 		)
 	}
 }

@@ -219,8 +219,8 @@ func (s *BookService) GetBookList(page, pageSize int, keyword, level string, maj
 	return rBooks, total, nil
 }
 
-func (s *BookService) DeleteBook(id int) error {
-	return s.DB.Delete(&book.Book{}, id).Error
+func (s *BookService) DeleteBook(ids []int) error {
+	return s.DB.Model(&book.Book{}).Where("id IN (?)", ids).Update("status", stable.StatusDeleted).Error
 }
 
 func (s *BookService) getConfigMap() (map[string]string, map[string]string, error) {

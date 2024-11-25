@@ -10,7 +10,7 @@ type Topic struct {
 	Title      string    `gorm:"type:varchar(10000);not null" json:"title" binding:"required,max=10000"`
 	Cate       string    `gorm:"not null" json:"cate" binding:"required,max=255"`
 	Level      string    `gorm:"not null" json:"level" binding:"required,max=255"`
-	Answer     string    `gorm:"type:text;not null" json:"answer" binding:"required"`
+	Answer     string    `gorm:"type:text;not null" json:"answer"`
 	Author     string    `gorm:"type:varchar(100);not null" json:"author" binding:"required,max=100"`
 	MajorID    int       `gorm:"not null" json:"major_id" binding:"required,gt=0"`
 	Tag        string    `gorm:"type:varchar(255)" json:"tag" binding:"max=255"`

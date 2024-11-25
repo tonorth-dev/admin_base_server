@@ -66,19 +66,35 @@ func (h *BookAPI) GetBookByID(c *gin.Context) {
 }
 
 func (h *BookAPI) DeleteBook(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	idsStr := c.Param("id")
+	ids := parseIDs(idsStr)
 
 	// 检查试题是否存在
-	existingBook, err := h.Service.GetBookByID(id)
-	if err != nil || existingBook == nil {
-		global.GVA_LOG.Error("试题未找到!", zap.Error(err))
-		response.FailWithMessage("试题未找到", c)
-		return
+	for _, id := range ids {
+		existingTopic, err := h.Service.GetBookByID(id)
+		if err != nil || existingTopic == nil {
+			global.GVA_LOG.Error("试题未找到!", zap.Error(err))
+			response.FailWithMessage("部分试题未找到", c)
+			return
+		}
 	}
 
-	if err := h.Service.DeleteBook(id); err != nil {
+	if err := h.Service.DeleteBook(ids); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithMessage("试题删除成功", c)
+}
+
+func parseIDs(idsStr string) []int {
+	ids := make([]int, 0)
+	for _, idStr := range strings.Split(idsStr, ",") {
+		id, err := strconv.Atoi(strings.TrimSpace(idStr))
+		if err != nil {
+			global.GVA_LOG.Error("无效的ID", zap.Error(err))
+			continue
+		}
+		ids = append(ids, id)
+	}
+	return ids
 }

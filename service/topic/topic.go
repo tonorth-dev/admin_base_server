@@ -153,7 +153,7 @@ func (s *TopicService) UpdateTopic(id int, q *topic.Topic) error {
 }
 
 func (s *TopicService) DeleteTopic(ids []int) error {
-	return s.DB.Delete(&topic.Topic{}, "id IN (?)", ids).Error
+	return s.DB.Model(&topic.Topic{}).Where("id IN (?)", ids).Update("status", stable.StatusDeleted).Error
 }
 
 // todo 加上校验逻辑
