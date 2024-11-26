@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邀请您完善题目内容</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[readonly], textarea[readonly] {
+            border-color: #ddd;
+            background-color: #f9f9f9;
+            cursor: not-allowed; /* 禁止点击样式 */
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+            margin-top: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            vertical-align: top; /* 确保文字在最上方 */
+            line-height: 1.5; /* 调整行高 */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .required {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>邀请您完善题目内容</h1>
+    <form id="inviteForm">
+        <div class="form-group hidden">
+            <label for="topicId">题目ID</label>
+            <input type="text" id="topicId" name="topicId" readonly>
+        </div>
+        <div class="form-group">
+            <label for="title">题干</label>
+            <textarea id="title" name="title" readonly></textarea>
+        </div>
+        <div class="form-group">
+            <label for="type">题目类型</label>
+            <input type="text" id="type" name="type" readonly>
+        </div>
+        <div class="form-group">
+            <label for="major">专业</label>
+            <input type="text" id="major" name="major" readonly>
+        </div>
+        <div class="form-group">
+            <label for="answer">答案 <span class="required">*</span></label>
+            <textarea id="answer" name="answer" rows="12" required></textarea>
+            <span class="error" id="answerError"></span>
+        </div>
+        <div class="form-group">
+            <label for="invitee">邀请人 <span class="required">*</span></label>
+            <input type="text" id="invitee" name="invitee" required>
+            <span class="error" id="inviteeError"></span>
+        </div>
+        <button type="submit">提交</button>
+        <button type="button" id="closeButton">关闭</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const topicId = urlParams.get('topicId');
+
+        fetch(`http://localhost:8888/admin/topic/topic/${topicId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 0) {
+                    const topicData = data.data;
+                    document.getElementById('topicId').value = topicData.id;
+                    document.getElementById('title').value = topicData.title;
+                    document.getElementById('type').value = topicData.cate_name;
+                    document.getElementById('major').value = topicData.major_name;
+                } else {
+                    alert('获取题目信息失败: ' + data.msg);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('获取题目信息失败');
+            });
+
+        document.getElementById('inviteForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const answer = document.getElementById('answer').value.trim();
+            const invitee = document.getElementById('invitee').value.trim();
+
+            let isValid = true;
+            document.getElementById('answerError').innerText = '';
+            document.getElementById('inviteeError').innerText = '';
+
+            if (!answer) {
+                document.getElementById('answerError').innerText = '答案不能为空';
+                isValid = false;
+            }
+
+            if (!invitee) {
+                document.getElementById('inviteeError').innerText = '邀请人不能为空';
+                isValid = false;
+            }
+
+            if (isValid) {
+                fetch(`http://localhost:8888/admin/topic/topic/${topicId}/submit_audit`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        major: document.getElementById('major').value,
+                        answer: answer,
+                        invitee: invitee
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code === 0) {
+                            alert('提交成功');
+                            window.close();
+                        } else {
+                            alert('提交失败: ' + data.msg);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('提交失败');
+                    });
+            }
+        });
+
+        // 添加关闭按钮的点击事件处理器
+        document.getElementById('closeButton').addEventListener('click', function () {
+            window.close();
+        });
+    });
+</script>
+</body>
+</html>

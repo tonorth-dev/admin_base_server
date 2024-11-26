@@ -96,5 +96,9 @@ func (e *TopicRouter) InitTopicRouter(Router *gin.RouterGroup) {
 		// @Failure 400 {object} models.Response
 		// @Router /topic/export [get]
 		topicRouter.GET("/topic/export", topicAPI.ExportTopics)
+
+		topicRouter.PUT("/topic/:id/audit_ret/:status", topicAPI.AuditTopic)
+		topicRouter.PUT("/topic/:id/submit_audit", topicAPI.SubmitAudit)
+
 	}
 }

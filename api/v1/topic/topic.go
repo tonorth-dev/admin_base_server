@@ -3,6 +3,7 @@ package topic
 import (
 	"admin_base_server/global"
 	"admin_base_server/model/common/response"
+	stable "admin_base_server/model/const"
 	qmodel "admin_base_server/model/topic"
 	qservice "admin_base_server/service/topic"
 	"bytes"
@@ -31,6 +32,7 @@ func (h *TopicAPI) CreateTopic(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
+	q.AnswerDraft = q.Answer
 	if err := h.Service.CreateTopic(&q); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -92,6 +94,48 @@ func (h *TopicAPI) UpdateTopic(c *gin.Context) {
 		return
 	}
 	response.OkWithData("更新成功", c)
+}
+
+func (h *TopicAPI) SubmitAudit(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	var q qmodel.Audit
+	if err := c.ShouldBindJSON(&q); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 检查试题是否存在
+	existingTopic, err := h.Service.GetTopicByID(id)
+	if err != nil || existingTopic == nil {
+		global.GVA_LOG.Error("试题未找到!", zap.Error(err))
+		response.FailWithMessage("试题未找到", c)
+		return
+	}
+
+	if err := h.Service.SubmitAudit(id, &q); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithData("提交成功", c)
+}
+
+func (h *TopicAPI) AuditTopic(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	ret, _ := strconv.Atoi(c.Param("status"))
+
+	// 检查试题是否存在
+	existingTopic, err := h.Service.GetTopicByID(id)
+	if err != nil || existingTopic == nil {
+		global.GVA_LOG.Error("试题未找到!", zap.Error(err))
+		response.FailWithMessage("试题未找到", c)
+		return
+	}
+
+	if err := h.Service.AuditTopic(id, ret == stable.AuditAccept); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithData("提交成功", c)
 }
 
 func (h *TopicAPI) DeleteTopic(c *gin.Context) {

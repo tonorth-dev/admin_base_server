@@ -57,21 +57,28 @@ func (s *TopicService) GetTopicByID(id int) (*topic.RTopic, error) {
 		return nil, err
 	}
 
+	majorMap, err := s.getMajorMap()
+	if err != nil {
+		return nil, err
+	}
+
 	r = &topic.RTopic{
-		ID:         q.ID,
-		Title:      q.Title,
-		Author:     q.Author,
-		Answer:     q.Answer,
-		Tag:        q.Tag,
-		Level:      q.Level,
-		LevelName:  levelMap[q.Level],
-		Cate:       q.Cate,
-		CateName:   cateMap[q.Cate],
-		MajorID:    q.MajorID,
-		Status:     q.Status,
-		StatusName: stable.RecordStatusMap[q.Status],
-		CreateTime: q.CreateTime,
-		UpdateTime: q.UpdateTime,
+		ID:          q.ID,
+		Title:       q.Title,
+		Author:      q.Author,
+		Answer:      q.Answer,
+		AnswerDraft: q.AnswerDraft,
+		Tag:         q.Tag,
+		Level:       q.Level,
+		LevelName:   levelMap[q.Level],
+		Cate:        q.Cate,
+		CateName:    cateMap[q.Cate],
+		MajorID:     q.MajorID,
+		MajorName:   majorMap[q.MajorID],
+		Status:      q.Status,
+		StatusName:  stable.RecordStatusMap[q.Status],
+		CreateTime:  q.CreateTime,
+		UpdateTime:  q.UpdateTime,
 	}
 	return r, nil
 }
@@ -102,7 +109,7 @@ func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level str
 		db = db.Where("major_id = ?", majorID)
 	}
 	if status == 0 {
-		db = db.Where("status in (?)", []int{stable.StatusActive, stable.StatusDraft})
+		db = db.Where("status in (?)", []int{stable.StatusActive, stable.StatusDraft, stable.StatusAuditing})
 	} else {
 		db = db.Where("status = ?", status)
 	}
@@ -150,6 +157,45 @@ func (s *TopicService) GetTopicList(page, pageSize int, keyword, cate, level str
 
 func (s *TopicService) UpdateTopic(id int, q *topic.Topic) error {
 	return s.DB.Model(&topic.Topic{}).Where("id = ?", id).Updates(q).Error
+}
+
+func (s *TopicService) SubmitAudit(id int, a *topic.Audit) error {
+	r, err := s.GetTopicByID(id)
+	if err != nil {
+		return errors.New("试题不存在")
+	}
+
+	if r.Status != stable.StatusDraft {
+		return errors.New("试题不在草稿状态")
+	}
+
+	q := &topic.Topic{
+		Answer:  a.Answer,
+		Invitee: a.Invitee,
+		Status:  stable.StatusAuditing,
+	}
+	return s.UpdateTopic(id, q)
+}
+
+func (s *TopicService) AuditTopic(id int, approved bool) error {
+	r, err := s.GetTopicByID(id)
+	if err != nil {
+		return errors.New("试题不存在")
+	}
+
+	if r.Status != stable.StatusAuditing {
+		return errors.New("试题不在审核中状态")
+	}
+
+	q := &topic.Topic{}
+	if approved {
+		q.Status = stable.StatusActive
+	} else {
+		q.Status = stable.StatusDraft
+		q.Answer = r.AnswerDraft
+	}
+
+	return s.UpdateTopic(id, q)
 }
 
 func (s *TopicService) DeleteTopic(ids []int) error {
