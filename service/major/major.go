@@ -2,6 +2,7 @@ package major
 
 import (
 	"admin_base_server/global"
+	stable "admin_base_server/model/const"
 	"admin_base_server/model/major"
 	"gorm.io/gorm"
 	"strings"
@@ -19,6 +20,7 @@ func NewMajorService() *MajorService {
 
 // CreateMajor 创建新的专业信息
 func (s *MajorService) CreateMajor(m *major.Major) error {
+	m.Status = stable.StatusActive
 	return s.DB.Create(m).Error
 }
 
@@ -32,23 +34,27 @@ func (s *MajorService) GetMajorByID(id int) (*major.Major, error) {
 }
 
 // GetMajorList 获取专业信息列表
-func (s *MajorService) GetMajorList(page, pageSize int, search string) ([]major.Major, int64, error) {
+func (s *MajorService) GetMajorList(page, pageSize int, id int, keyword string) ([]major.Major, int64, error) {
 	var majors []major.Major
 	var total int64
 
 	db := global.GVA_DB.Model(&major.Major{})
 
+	if id > 0 {
+		db = db.Where("id = ?", id)
+	}
+
 	// 搜索条件
-	if search != "" {
-		searchQuery := "%" + strings.ToLower(search) + "%"
-		db = db.Where("LOWER(first_level_category) LIKE ? OR LOWER(second_level_category) LIKE ? OR LOWER(major_name) LIKE ? ", searchQuery, searchQuery, searchQuery)
+	if keyword != "" {
+		searchQuery := "%" + strings.ToLower(keyword) + "%"
+		db = db.Where("LOWER(first_level_category) LIKE ? OR LOWER(second_level_category) LIKE ? OR LOWER(major_name) LIKE ?", searchQuery, searchQuery, searchQuery)
 	}
 
 	// 分页
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&majors).Error; err != nil {
+	if err := db.Order("id DESC").Offset((page - 1) * pageSize).Limit(pageSize).Find(&majors).Error; err != nil {
 		return nil, 0, err
 	}
 

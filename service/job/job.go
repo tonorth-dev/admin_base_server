@@ -137,8 +137,138 @@ func (s *JobService) GetJobList(page, pageSize int, keyword string, majorID int)
 	return rJobs, total, nil
 }
 
+func (s *JobService) GetJobListBySortMajor(page, pageSize int, keyword string, majorID int) ([]job.RJob, int64, error) {
+	var (
+		total1, total2 int64
+		jobs           []job.Job
+		rJobs          []job.RJob
+	)
+
+	if majorID <= 0 {
+		return nil, 0, errors.New("major_id 不能为空")
+	}
+
+	db := global.GVA_DB.Model(&job.Job{})
+
+	// 搜索条件
+	if keyword != "" {
+		searchQuery := "%" + strings.ToLower(keyword) + "%"
+		db = db.Where("LOWER(code) LIKE ? OR LOWER(name) LIKE ? OR LOWER(company_code) LIKE ? OR LOWER(company_name) LIKE ?", searchQuery, searchQuery, searchQuery, searchQuery)
+	}
+
+	// 状态条件
+	db = db.Where("status = ?", stable.StatusActive)
+
+	// 分页计算
+	offset := (page - 1) * pageSize
+
+	// 获取 major_id 等于传递过来的 major_id 的数据集
+	majorDB := db.Where("major_id = ?", majorID)
+	if err := majorDB.Count(&total1).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var majorJobs []job.Job
+	if err := majorDB.Order("id DESC").Offset(offset).Limit(pageSize).Find(&majorJobs).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 计算剩余条目数
+	remainingCount := pageSize - len(majorJobs)
+	if remainingCount > 0 {
+		// 获取 major_id 为空的数据集
+		nonMajorDB := global.GVA_DB.Model(&job.Job{})
+		if keyword != "" {
+			searchQuery := "%" + strings.ToLower(keyword) + "%"
+			nonMajorDB = nonMajorDB.Where("LOWER(code) LIKE ? OR LOWER(name) LIKE ? OR LOWER(company_code) LIKE ? OR LOWER(company_name) LIKE ?", searchQuery, searchQuery, searchQuery, searchQuery)
+		}
+		nonMajorDB = nonMajorDB.Where("status = ?", stable.StatusActive).Where("major_id != ?", majorID)
+
+		// 获取总数
+		if err := nonMajorDB.Count(&total2).Error; err != nil {
+			return nil, 0, err
+		}
+
+		// 计算非 major 部分需要的偏移量
+		nonMajorOffset := max(0, int64(offset)-total1)
+		nonMajorJobs := []job.Job{}
+		if err := nonMajorDB.Order("id DESC").Offset(int(nonMajorOffset)).Limit(remainingCount).Find(&nonMajorJobs).Error; err != nil {
+			return nil, 0, err
+		}
+
+		// 合并两个结果集
+		jobs = append(majorJobs, nonMajorJobs...)
+	} else {
+		jobs = majorJobs
+	}
+
+	// 获取 major 的映射
+	majorMap, err := s.getMajorMap()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for _, q := range jobs {
+		tmpMap := map[string]string{}
+		_ = json.Unmarshal(q.Condition, &tmpMap)
+		var majorSorted int
+		if q.MajorID == majorID {
+			majorSorted = 1
+		} else {
+			majorSorted = 0
+		}
+		rJobs = append(rJobs, job.RJob{
+			ID:              q.ID,
+			Code:            q.Code,
+			Name:            q.Name,
+			Desc:            q.Desc,
+			Cate:            q.Cate,
+			CompanyCode:     q.CompanyCode,
+			CompanyName:     q.CompanyName,
+			EnrollmentNum:   q.EnrollmentNum,
+			EnrollmentRatio: q.EnrollmentRatio,
+			Condition:       q.Condition,
+			ConditionName:   generateConditionDesc(tmpMap),
+			MajorID:         q.MajorID,
+			MajorSorted:     majorSorted,
+			MajorName:       majorMap[q.MajorID],
+			City:            q.City,
+			Phone:           q.Phone,
+			Status:          q.Status,
+			StatusName:      stable.RecordStatusMap[q.Status],
+			CreateTime:      q.CreateTime,
+			UpdateTime:      q.UpdateTime,
+		})
+	}
+
+	return rJobs, total1 + total2, nil
+}
+
+// 工具函数：取最大值
+func max(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func (s *JobService) UpdateJob(id int, q *job.Job) error {
 	return s.DB.Model(&job.Job{}).Where("id = ?", id).Updates(q).Error
+}
+
+func (s *JobService) BatchUpdateMajor(jobIDs []int, majorID int) error {
+	if len(jobIDs) == 0 {
+		return errors.New("job_ids 不能为空")
+	}
+
+	if majorID == 0 {
+		return errors.New("major_id 不能为0")
+	}
+
+	// 使用 IN 子句进行批量更新
+	return s.DB.Model(&job.Job{}).
+		Where("id IN (?)", jobIDs).
+		Update("major_id", majorID).Error
 }
 
 func (s *JobService) DeleteJob(ids []int) error {
@@ -191,7 +321,7 @@ func (s *JobService) getConfigMap() (map[string]string, map[string]string, error
 func (s *JobService) getMajorMap() (map[int]string, error) {
 	majorMap := make(map[int]string)
 
-	majors, _, err := s.majorService.GetMajorList(1, 10000, "")
+	majors, _, err := s.majorService.GetMajorList(1, 10000, 0, "")
 	if err != nil {
 		return nil, err
 	}

@@ -256,7 +256,7 @@ func (s *BookService) getConfigMap() (map[string]string, map[string]string, erro
 func (s *BookService) getMajorMap() (map[int]string, error) {
 	majorMap := make(map[int]string)
 
-	majors, _, err := s.majorService.GetMajorList(1, 10000, "")
+	majors, _, err := s.majorService.GetMajorList(1, 10000, 0, "")
 	if err != nil {
 		return nil, err
 	}

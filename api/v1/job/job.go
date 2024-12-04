@@ -42,8 +42,18 @@ func (h *JobAPI) GetJobList(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 	search := strings.TrimSpace(c.Query("keyword"))
 	majorID := cast.ToInt(c.Query("major_id"))
+	all := cast.ToInt(c.Query("all"))
 
-	jobs, total, err := h.Service.GetJobList(page, pageSize, search, majorID)
+	var jobs []jmodel.RJob
+	var total int64
+	var err error
+
+	if majorID > 0 && all > 0 {
+		jobs, total, err = h.Service.GetJobListBySortMajor(page, pageSize, search, majorID)
+	} else {
+		jobs, total, err = h.Service.GetJobList(page, pageSize, search, majorID)
+	}
+
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -88,6 +98,23 @@ func (h *JobAPI) UpdateJob(c *gin.Context) {
 		return
 	}
 	response.OkWithData("更新成功", c)
+}
+
+func (h *JobAPI) BatchUpdateMajor(c *gin.Context) {
+	var req jmodel.RBatchUpdateMajor
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 批量更新 major_id
+	if err := h.Service.BatchUpdateMajor(req.JobIDs, req.MajorID); err != nil {
+		global.GVA_LOG.Error("批量更新 major_id 失败!", zap.Error(err))
+		response.FailWithMessage("批量更新 major_id 失败", c)
+		return
+	}
+
+	response.OkWithData("批量更新成功", c)
 }
 
 func (h *JobAPI) DeleteJob(c *gin.Context) {

@@ -12,6 +12,7 @@ type Major struct {
 	SecondLevelCategory string    `gorm:"type:varchar(255)" json:"second_level_category"`
 	MajorName           string    `gorm:"type:varchar(255)" json:"major_name"`
 	Year                string    `gorm:"type:varchar(255)" json:"year"`
+	Status              int       `gorm:"not null;default:0" json:"status" binding:"gte=0"`
 	CreateTime          time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"create_time"`
 	UpdateTime          time.Time `gorm:"default:CURRENT_TIMESTAMP;update:CURRENT_TIMESTAMP" json:"update_time"`
 }

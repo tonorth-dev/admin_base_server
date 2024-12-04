@@ -38,6 +38,7 @@ type RJob struct {
 	Condition       json.RawMessage `gorm:"type:jsonb" json:"condition"` // 使用 json.RawMessage
 	ConditionName   string          `gorm:"type:jsonb" json:"condition_name"`
 	MajorID         int             `gorm:"not null;default:0" json:"major_id"`
+	MajorSorted     int             `gorm:"not null;default:0" json:"major_sorted"`
 	MajorName       string          `gorm:"type:varchar(128);not null;default:" json:"major_name"`
 	City            string          `gorm:"type:varchar(128);not null;default:" json:"city"`
 	Phone           string          `gorm:"type:varchar(255);not null;default:" json:"phone"`
@@ -45,6 +46,11 @@ type RJob struct {
 	StatusName      string          `gorm:"not null;default:" json:"status_name"`
 	CreateTime      time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"create_time"`
 	UpdateTime      time.Time       `gorm:"default:CURRENT_TIMESTAMP;update:CURRENT_TIMESTAMP" json:"update_time"`
+}
+
+type RBatchUpdateMajor struct {
+	JobIDs  []int `json:"job_ids" binding:"required,min=1"`
+	MajorID int   `json:"major_id" binding:"required"`
 }
 
 var Source = []map[string]string{

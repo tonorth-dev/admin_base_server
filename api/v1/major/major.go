@@ -38,9 +38,10 @@ func (h *MajorAPI) CreateMajor(c *gin.Context) {
 func (h *MajorAPI) GetMajorList(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
-	search := strings.TrimSpace(c.Query("search"))
+	id, _ := strconv.Atoi(c.Query("major_id"))
+	search := strings.TrimSpace(c.Query("keyword"))
 
-	majors, total, err := h.Service.GetMajorList(page, pageSize, search)
+	majors, total, err := h.Service.GetMajorList(page, pageSize, id, search)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -57,8 +58,8 @@ func (h *MajorAPI) GetMajorByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	q, err := h.Service.GetMajorByID(id)
 	if err != nil {
-		global.GVA_LOG.Error("试题未找到!", zap.Error(err))
-		response.FailWithMessage("试题未找到", c)
+		global.GVA_LOG.Error("专业未找到!", zap.Error(err))
+		response.FailWithMessage("专业未找到", c)
 		return
 	}
 	response.OkWithData(q, c)
@@ -72,11 +73,11 @@ func (h *MajorAPI) UpdateMajor(c *gin.Context) {
 		return
 	}
 
-	// 检查试题是否存在
+	// 检查专业是否存在
 	existingMajor, err := h.Service.GetMajorByID(id)
 	if err != nil || existingMajor == nil {
-		global.GVA_LOG.Error("试题未找到!", zap.Error(err))
-		response.FailWithMessage("试题未找到", c)
+		global.GVA_LOG.Error("专业未找到!", zap.Error(err))
+		response.FailWithMessage("专业未找到", c)
 		return
 	}
 
@@ -90,11 +91,11 @@ func (h *MajorAPI) UpdateMajor(c *gin.Context) {
 func (h *MajorAPI) DeleteMajor(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	// 检查试题是否存在
+	// 检查专业是否存在
 	existingMajor, err := h.Service.GetMajorByID(id)
 	if err != nil || existingMajor == nil {
-		global.GVA_LOG.Error("试题未找到!", zap.Error(err))
-		response.FailWithMessage("试题未找到", c)
+		global.GVA_LOG.Error("专业未找到!", zap.Error(err))
+		response.FailWithMessage("专业未找到", c)
 		return
 	}
 
@@ -102,7 +103,7 @@ func (h *MajorAPI) DeleteMajor(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	response.OkWithMessage("试题删除成功", c)
+	response.OkWithMessage("专业删除成功", c)
 }
 
 func (h *MajorAPI) BatchImportMajors(c *gin.Context) {
@@ -210,7 +211,7 @@ func (h *MajorAPI) BatchImportMajors(c *gin.Context) {
 //		return
 //	}
 //
-//	// 写入试题数据
+//	// 写入专业数据
 //	for _, major := range majors {
 //		record := []string{
 //			major.Title,
