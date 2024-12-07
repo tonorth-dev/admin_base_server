@@ -1,114 +1,119 @@
-package institution
+package student
 
 import (
 	"admin_base_server/global"
 	"admin_base_server/model/common/response"
-	jmodel "admin_base_server/model/institution"
-	jservice "admin_base_server/service/institution"
+	jmodel "admin_base_server/model/student"
+	jservice "admin_base_server/service/student"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/cast"
+	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 	"strconv"
 	"strings"
 )
 
-type InstitutionAPI struct {
-	Service *jservice.InstitutionService
+type StudentAPI struct {
+	Service *jservice.StudentService
 }
 
-func NewInstitutionAPI(service *jservice.InstitutionService) *InstitutionAPI {
-	return &InstitutionAPI{Service: service}
+func NewStudentAPI(service *jservice.StudentService) *StudentAPI {
+	return &StudentAPI{Service: service}
 }
 
-func (h *InstitutionAPI) CreateInstitution(c *gin.Context) {
-	var q jmodel.Institution
+func (h *StudentAPI) CreateStudent(c *gin.Context) {
+	var q jmodel.Student
 	if err := c.ShouldBindJSON(&q); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := h.Service.CreateInstitution(&q); err != nil {
+	if err := h.Service.CreateStudent(&q); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithData(q, c)
 }
 
-func (h *InstitutionAPI) GetInstitutionList(c *gin.Context) {
+func (h *StudentAPI) GetStudentList(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 	keyword := strings.TrimSpace(c.Query("keyword"))
-	province := strings.TrimSpace(c.Query("province"))
-	city := strings.TrimSpace(c.Query("city"))
+	majorID := cast.ToInt(c.Query("major_id"))
+	classID := cast.ToInt(c.Query("class_id"))
+	institutionId := cast.ToInt(c.Query("institution_id"))
+	status := cast.ToInt(c.Query("status"))
 
-	var institutions []jmodel.RInstitution
+	var students []jmodel.RStudent
 	var total int64
 	var err error
 
-	institutions, total, err = h.Service.GetInstitutionList(page, pageSize, keyword, province, city)
+	students, total, err = h.Service.GetStudentList(page, pageSize, keyword, classID, institutionId, majorID, status)
+
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithData(map[string]interface{}{
-		"list":  institutions,
+		"list":  students,
 		"total": total,
 		"page":  page,
 		"size":  pageSize,
 	}, c)
 }
 
-func (h *InstitutionAPI) GetInstitutionByID(c *gin.Context) {
+func (h *StudentAPI) GetStudentByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	q, err := h.Service.GetInstitutionByID(id)
+	q, err := h.Service.GetStudentByID(id)
 	if err != nil {
-		global.GVA_LOG.Error("机构未找到!", zap.Error(err))
-		response.FailWithMessage("机构未找到", c)
+		global.GVA_LOG.Error("岗位未找到!", zap.Error(err))
+		response.FailWithMessage("岗位未找到", c)
 		return
 	}
 	response.OkWithData(q, c)
 }
 
-func (h *InstitutionAPI) UpdateInstitution(c *gin.Context) {
+func (h *StudentAPI) UpdateStudent(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	var q jmodel.Institution
+	var q jmodel.Student
 	if err := c.ShouldBindJSON(&q); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
-	// 检查机构是否存在
-	existingInstitution, err := h.Service.GetInstitutionByID(id)
-	if err != nil || existingInstitution == nil {
-		global.GVA_LOG.Error("机构未找到!", zap.Error(err))
-		response.FailWithMessage("机构未找到", c)
+	// 检查岗位是否存在
+	existingStudent, err := h.Service.GetStudentByID(id)
+	if err != nil || existingStudent == nil {
+		global.GVA_LOG.Error("岗位未找到!", zap.Error(err))
+		response.FailWithMessage("岗位未找到", c)
 		return
 	}
 
-	if err := h.Service.UpdateInstitution(id, &q); err != nil {
+	if err := h.Service.UpdateStudent(id, &q); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithData("更新成功", c)
 }
 
-func (h *InstitutionAPI) DeleteInstitution(c *gin.Context) {
+func (h *StudentAPI) DeleteStudent(c *gin.Context) {
 	idsStr := c.Param("id")
 	ids := parseIDs(idsStr)
 
-	// 检查机构是否存在
+	// 检查岗位是否存在
 	for _, id := range ids {
-		existingInstitution, err := h.Service.GetInstitutionByID(id)
-		if err != nil || existingInstitution == nil {
-			global.GVA_LOG.Error("机构未找到!", zap.Error(err))
-			response.FailWithMessage("部分机构未找到", c)
+		existingStudent, err := h.Service.GetStudentByID(id)
+		if err != nil || existingStudent == nil {
+			global.GVA_LOG.Error("岗位未找到!", zap.Error(err))
+			response.FailWithMessage("部分岗位未找到", c)
 			return
 		}
 	}
 
-	if err := h.Service.DeleteInstitution(ids); err != nil {
+	if err := h.Service.DeleteStudent(ids); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	response.OkWithMessage("机构删除成功", c)
+	response.OkWithMessage("岗位删除成功", c)
 }
 
 func parseIDs(idsStr string) []int {
@@ -124,8 +129,8 @@ func parseIDs(idsStr string) []int {
 	return ids
 }
 
-// BatchImportInstitutions 用于处理批量导入题目，要根据文件格式和内容调整
-func (h *InstitutionAPI) BatchImportInstitutions(ctx *gin.Context) {
+// BatchImportStudents 用于处理批量导入题目，要根据文件格式和内容调整
+func (h *StudentAPI) BatchImportStudents(ctx *gin.Context) {
 	// 获取上传的文件
 	fileHeader, err := ctx.FormFile("file")
 	if err != nil {
@@ -141,7 +146,33 @@ func (h *InstitutionAPI) BatchImportInstitutions(ctx *gin.Context) {
 	}
 	defer file.Close()
 
-	response.OkWithMessage("机构批量导入成功", ctx)
+	// 读取Excel文件数据
+	xlsx, err := excelize.OpenReader(file)
+	if err != nil {
+		response.FailWithMessage(err.Error(), ctx)
+		return
+	}
+	defer xlsx.Close()
+
+	// 获取指定工作表中的数据
+	var records [][]string
+	sheetName := xlsx.GetSheetName(0) // 获取第一个工作表名称
+	rows, err := xlsx.GetRows(sheetName)
+	if err != nil {
+		response.FailWithMessage(err.Error(), ctx)
+		return
+	}
+	records = append(records, rows...)
+
+	// 检查记录数量
+	if len(records) > 5000 {
+		response.FailWithMessage("内容条数超过5000行", ctx)
+		return
+	}
+
+	// 将解析的数据转为Student结构体
+
+	response.OkWithMessage("岗位批量导入成功", ctx)
 }
 
 func findID(data []map[string]string, value string) string {
@@ -153,7 +184,7 @@ func findID(data []map[string]string, value string) string {
 	return ""
 }
 
-func (h *InstitutionAPI) ExportInstitutions(c *gin.Context) {
+func (h *StudentAPI) ExportStudents(c *gin.Context) {
 	//// 获取查询参数
 	//page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	//pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
@@ -164,7 +195,7 @@ func (h *InstitutionAPI) ExportInstitutions(c *gin.Context) {
 	//status := cast.ToInt(c.Query("status"))
 	//
 	//// 调用服务层方法获取符合条件的题目列表
-	//institutions, _, err := h.Service.GetInstitutionList(page, pageSize, search, cate, level, majorID, status)
+	//students, _, err := h.Service.GetStudentList(page, pageSize, search, cate, level, majorID, status)
 	//if err != nil {
 	//	response.FailWithMessage(err.Error(), c)
 	//	return
@@ -181,16 +212,16 @@ func (h *InstitutionAPI) ExportInstitutions(c *gin.Context) {
 	//	return
 	//}
 	//
-	//// 写入机构数据
-	//for _, institution := range institutions {
+	//// 写入岗位数据
+	//for _, student := range students {
 	//	record := []string{
-	//		institution.Title,
-	//		cast.ToString(institution.Cate),
-	//		institution.Answer,
-	//		institution.Author,
-	//		cast.ToString(institution.MajorID),
-	//		institution.MajorName,
-	//		institution.Tag,
+	//		student.Title,
+	//		cast.ToString(student.Cate),
+	//		student.Answer,
+	//		student.Author,
+	//		cast.ToString(student.MajorID),
+	//		student.MajorName,
+	//		student.Tag,
 	//	}
 	//	if err := csvWriter.Write(record); err != nil {
 	//		response.FailWithMessage(err.Error(), c)
@@ -207,8 +238,8 @@ func (h *InstitutionAPI) ExportInstitutions(c *gin.Context) {
 	//
 	//// 设置响应头
 	//c.Header("Content-Type", "text/csv")
-	//c.Header("Content-Disposition", "attachment; filename=institutions.csv")
-	//c.Header("File-Name", "institutions.csv")
+	//c.Header("Content-Disposition", "attachment; filename=students.csv")
+	//c.Header("File-Name", "students.csv")
 
 	// 发送 CSV 数据
 	//c.String(http.StatusOK, csvData.String())

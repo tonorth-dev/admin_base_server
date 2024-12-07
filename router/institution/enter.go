@@ -1,13 +1,13 @@
-package job
+package institution
 
 import (
-	"admin_base_server/api/v1/job"
+	"admin_base_server/api/v1/institution"
 )
 
 type RouterGroup struct {
-	JobRouter
+	InstitutionRouter
 }
 
 var (
-	jobAPI *job.JobAPI
+	institutionAPI *institution.InstitutionAPI
 )

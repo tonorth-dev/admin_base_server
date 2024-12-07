@@ -14,6 +14,8 @@ const (
 	StatusDeleted
 	// StatusAuditing 审核中
 	StatusAuditing
+	// StatusExpired 已过期
+	StatusExpired
 )
 
 var RecordStatusMap = map[int]string{
@@ -22,6 +24,7 @@ var RecordStatusMap = map[int]string{
 	StatusActive:   "已完成",
 	StatusDeleted:  "已删除",
 	StatusAuditing: "审核中",
+	StatusExpired:  "已过期",
 }
 
 const (

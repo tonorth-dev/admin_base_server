@@ -74,6 +74,47 @@ func (s *JobService) GetJobByID(id int) (*job.RJob, error) {
 	return r, nil
 }
 
+func (s *JobService) GetJobByCode(code string) (*job.RJob, error) {
+	var (
+		q *job.Job
+		r *job.RJob
+	)
+	if err := s.DB.Where("code = ?", code).First(&q).Error; err != nil {
+		return nil, err
+	}
+
+	majorMap, err := s.getMajorMap()
+	if err != nil {
+		return nil, err
+	}
+
+	tmpMap := map[string]string{}
+	_ = json.Unmarshal(q.Condition, &tmpMap)
+
+	r = &job.RJob{
+		ID:              q.ID,
+		Code:            q.Code,
+		Name:            q.Name,
+		Desc:            q.Desc,
+		Cate:            q.Cate,
+		CompanyCode:     q.CompanyCode,
+		CompanyName:     q.CompanyName,
+		EnrollmentNum:   q.EnrollmentNum,
+		EnrollmentRatio: q.EnrollmentRatio,
+		Condition:       q.Condition,
+		ConditionName:   generateConditionDesc(tmpMap),
+		MajorID:         q.MajorID,
+		MajorName:       majorMap[q.MajorID],
+		City:            q.City,
+		Phone:           q.Phone,
+		Status:          q.Status,
+		StatusName:      stable.RecordStatusMap[q.Status],
+		CreateTime:      q.CreateTime,
+		UpdateTime:      q.UpdateTime,
+	}
+	return r, nil
+}
+
 func (s *JobService) GetJobList(page, pageSize int, keyword string, majorID int) ([]job.RJob, int64, error) {
 	var (
 		total int64

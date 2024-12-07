@@ -9,7 +9,6 @@ import (
 type Class struct {
 	ID            int       `gorm:"primaryKey;autoIncrement" json:"id"`
 	ClassName     string    `gorm:"type:varchar(255);not null" json:"class_name"`
-	StudentNum    int       `gorm:"not null" json:"student_num"`
 	Password      string    `gorm:"type:varchar(255);not null" json:"password"`
 	InstitutionID int       `gorm:"not null" json:"institution_id"`
 	Teacher       string    `gorm:"type:varchar(255);not null" json:"teacher"`
@@ -22,7 +21,6 @@ type Class struct {
 type RClass struct {
 	ID              int       `gorm:"primaryKey;autoIncrement" json:"id"`
 	ClassName       string    `gorm:"type:varchar(255);not null" json:"class_name"`
-	StudentNum      int       `gorm:"not null" json:"student_num"`
 	Password        string    `gorm:"type:varchar(255);not null" json:"password"`
 	InstitutionID   int       `gorm:"not null" json:"institution_id"`
 	InstitutionName int       `gorm:"not null" json:"institution_name"`

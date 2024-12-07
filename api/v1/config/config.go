@@ -32,7 +32,7 @@ func (h *ConfigAPI) CreateConfig(c *gin.Context) {
 }
 
 func (h *ConfigAPI) GetAllConfigList(c *gin.Context) {
-	configs, err := h.Service.GetAllConfigList()
+	configs, err := h.Service.GetAllDBConfigList()
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -44,8 +44,25 @@ func (h *ConfigAPI) GetAllConfigList(c *gin.Context) {
 }
 
 func (h *ConfigAPI) GetConfigByName(c *gin.Context) {
-	name := strings.Trim(c.Param("name"), " ")
-	q, err := h.Service.GetActiveConfig(name)
+	name := strings.TrimSpace(c.Param("name"))
+	if name == "" {
+		response.FailWithMessage("参数name不能为空", c)
+		return
+	}
+	if name == "area" {
+		level := strings.TrimSpace(c.Query("level"))
+		parentId := strings.TrimSpace(c.Query("parent_id"))
+		q, err := h.Service.GetAreaConfig(level, parentId)
+		if err != nil {
+			global.GVA_LOG.Error("配置未找到!", zap.Error(err))
+			response.FailWithMessage("配置未找到", c)
+			return
+		}
+		response.OkWithData(q, c)
+		return
+	}
+
+	q, err := h.Service.GetActiveConfigFromDB(name)
 	if err != nil {
 		global.GVA_LOG.Error("配置未找到!", zap.Error(err))
 		response.FailWithMessage("配置未找到", c)
@@ -55,7 +72,7 @@ func (h *ConfigAPI) GetConfigByName(c *gin.Context) {
 }
 
 func (h *ConfigAPI) UpdateConfig(c *gin.Context) {
-	name := strings.Trim(c.Param("name"), " ")
+	name := strings.TrimSpace(c.Param("name"))
 	var q cmodel.RConfig
 	if err := c.ShouldBindJSON(&q); err != nil {
 		response.FailWithMessage(err.Error(), c)
@@ -63,7 +80,7 @@ func (h *ConfigAPI) UpdateConfig(c *gin.Context) {
 	}
 
 	// 检查配置是否存在
-	existingConfig, err := h.Service.GetActiveConfig(name)
+	existingConfig, err := h.Service.GetActiveConfigFromDB(name)
 	if err != nil || existingConfig == nil {
 		global.GVA_LOG.Error("配置未找到!", zap.Error(err))
 		response.FailWithMessage("配置未找到", c)

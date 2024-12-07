@@ -1,5 +1,5 @@
-package job
+package institution
 
 type ApiGroup struct {
-	JobAPI
+	InstitutionAPI
 }

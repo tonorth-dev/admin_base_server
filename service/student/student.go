@@ -5,23 +5,31 @@ import (
 	stable "admin_base_server/model/const"
 	"admin_base_server/model/student"
 	"admin_base_server/service/config"
+	"admin_base_server/service/institution"
+	"admin_base_server/service/job"
 	"admin_base_server/service/major"
 	"errors"
+	"github.com/spf13/cast"
 	"gorm.io/gorm"
+	"log"
 	"strings"
 )
 
 type StudentService struct {
-	DB            *gorm.DB
-	configService *config.ConfigService
-	majorService  *major.MajorService
+	DB                 *gorm.DB
+	configService      *config.ConfigService
+	majorService       *major.MajorService
+	jobService         *job.JobService
+	institutionService *institution.InstitutionService
 }
 
 func NewStudentService() *StudentService {
 	return &StudentService{
-		DB:            global.GVA_DB,
-		configService: config.NewConfigService(),
-		majorService:  major.NewMajorService(),
+		DB:                 global.GVA_DB,
+		configService:      config.NewConfigService(),
+		majorService:       major.NewMajorService(),
+		jobService:         job.NewJobService(),
+		institutionService: institution.NewInstitutionService(),
 	}
 }
 
@@ -38,23 +46,55 @@ func (s *StudentService) GetStudentByID(id int) (*student.RStudent, error) {
 		return nil, err
 	}
 
+	// 获取 JobName 和 JobDesc
+	jobDetail, err := s.jobService.GetJobByCode(q.JobCode)
+	if err != nil {
+		return nil, err
+	}
+	insDetail, err := s.institutionService.GetInstitutionByID(q.InstitutionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取 MajorNames
+	majorMap, _ := s.getMajorMap()
+	majorIDs := strings.Split(q.MajorIDs, ",")
+	var majorNames []string
+
+	// 遍历 majorIDs 并使用 majorMap 获取对应的 majorName
+	for _, majorID := range majorIDs {
+		if majorName, exists := majorMap[cast.ToInt(majorID)]; exists {
+			majorNames = append(majorNames, majorName)
+		} else {
+			// 如果 majorID 在 majorMap 中不存在，可以选择记录日志或跳过
+			log.Printf("MajorID %s 在 majorMap 中不存在", majorID)
+		}
+	}
+
 	r = &student.RStudent{
-		ID:            q.ID,
-		Name:          q.Name,
-		Phone:         q.Phone,
-		Password:      q.Password,
-		InstitutionID: q.InstitutionID,
-		ClassID:       q.ClassID,
-		Referrer:      q.Referrer,
-		Status:        q.Status,
-		StatusName:    "Active", // 根据实际情况设置 StatusName
-		CreateTime:    q.CreateTime,
-		UpdateTime:    q.UpdateTime,
+		ID:              q.ID,
+		Name:            q.Name,
+		Phone:           q.Phone,
+		Password:        q.Password,
+		InstitutionID:   q.InstitutionID,
+		InstitutionName: insDetail.Name,
+		ClassID:         q.ClassID,
+		ClassName:       "s.getClassName(q.ClassID)",
+		Referrer:        q.Referrer,
+		JobCode:         q.JobCode,
+		JobName:         jobDetail.Name,
+		JobDesc:         jobDetail.Desc,
+		MajorIDs:        q.MajorIDs,
+		MajorNames:      majorNames,
+		Status:          q.Status,
+		StatusName:      stable.RecordStatusMap[q.Status],
+		CreateTime:      q.CreateTime,
+		UpdateTime:      q.UpdateTime,
 	}
 	return r, nil
 }
 
-func (s *StudentService) GetStudentList(page, pageSize int, keyword, cate, level string, majorID int, status int) ([]student.RStudent, int64, error) {
+func (s *StudentService) GetStudentList(page, pageSize int, keyword string, classId, institutionId, majorID int, status int) ([]student.RStudent, int64, error) {
 	var (
 		total     int64
 		students  []student.Student
@@ -66,20 +106,24 @@ func (s *StudentService) GetStudentList(page, pageSize int, keyword, cate, level
 	// 搜索条件
 	if keyword != "" {
 		searchQuery := "%" + strings.ToLower(keyword) + "%"
-		db = db.Where("LOWER(name) LIKE ? OR LOWER(company_name) LIKE ? OR LOWER(student_name) LIKE ?", searchQuery, searchQuery, searchQuery)
+		db = db.Where("LOWER(name) LIKE ? OR LOWER(phone) LIKE ? OR LOWER(job_code) LIKE ?", searchQuery, searchQuery, searchQuery)
 	}
 
 	// 筛选条件
-	if level != "" {
-		db = db.Where("level = ?", level)
+	if classId != 0 {
+		db = db.Where("class_id = ?", classId)
 	}
-	if cate != "" {
-		db = db.Where("cate = ?", cate)
+	if institutionId != 0 {
+		db = db.Where("institution_id = ?", institutionId)
 	}
 	if majorID != 0 {
-		db = db.Where("major_id = ?", majorID)
+		db = db.Where("FIND_IN_SET(?, major_ids)", majorID)
 	}
-	db = db.Where("status = ?", stable.StatusActive)
+	if status != 0 {
+		db = db.Where("status =?", status)
+	} else {
+		db = db.Where("status != ?", stable.StatusDeleted)
+	}
 
 	// 分页
 	if err := db.Count(&total).Error; err != nil {
@@ -89,19 +133,52 @@ func (s *StudentService) GetStudentList(page, pageSize int, keyword, cate, level
 		return nil, 0, err
 	}
 
+	majorMap, _ := s.getMajorMap()
 	for _, v := range students {
+
+		// 获取 JobName 和 JobDesc
+		jobDetail, err := s.jobService.GetJobByCode(v.JobCode)
+		if err != nil {
+			return nil, 0, err
+		}
+		insDetail, err := s.institutionService.GetInstitutionByID(v.InstitutionID)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		// 获取 MajorNames
+		majorIDs := strings.Split(v.MajorIDs, ",")
+		var majorNames []string
+
+		// 遍历 majorIDs 并使用 majorMap 获取对应的 majorName
+		for _, majorID := range majorIDs {
+			if majorName, exists := majorMap[cast.ToInt(majorID)]; exists {
+				majorNames = append(majorNames, majorName)
+			} else {
+				// 如果 majorID 在 majorMap 中不存在，可以选择记录日志或跳过
+				log.Printf("MajorID %s 在 majorMap 中不存在", majorID)
+			}
+		}
+
 		rStudents = append(rStudents, student.RStudent{
-			ID:            v.ID,
-			Name:          v.Name,
-			Phone:         v.Phone,
-			Password:      v.Password,
-			InstitutionID: v.InstitutionID,
-			ClassID:       v.ClassID,
-			Referrer:      v.Referrer,
-			Status:        v.Status,
-			StatusName:    "Active", // 根据实际情况设置 StatusName
-			CreateTime:    v.CreateTime,
-			UpdateTime:    v.UpdateTime,
+			ID:              v.ID,
+			Name:            v.Name,
+			Phone:           v.Phone,
+			Password:        v.Password,
+			InstitutionID:   v.InstitutionID,
+			InstitutionName: insDetail.Name,
+			ClassID:         v.ClassID,
+			ClassName:       "s.getClassName(v.ClassID)",
+			Referrer:        v.Referrer,
+			JobCode:         v.JobCode,
+			JobName:         jobDetail.Name,
+			JobDesc:         jobDetail.Desc,
+			MajorIDs:        v.MajorIDs,
+			MajorNames:      majorNames,
+			Status:          v.Status,
+			StatusName:      stable.RecordStatusMap[v.Status],
+			CreateTime:      v.CreateTime,
+			UpdateTime:      v.UpdateTime,
 		})
 	}
 
