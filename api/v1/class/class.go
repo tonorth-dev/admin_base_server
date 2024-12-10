@@ -1,10 +1,10 @@
-package student
+package class
 
 import (
 	"admin_base_server/global"
+	jmodel "admin_base_server/model/class"
 	"admin_base_server/model/common/response"
-	jmodel "admin_base_server/model/student"
-	jservice "admin_base_server/service/student"
+	jservice "admin_base_server/service/class"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
 	"github.com/xuri/excelize/v2"
@@ -13,129 +13,104 @@ import (
 	"strings"
 )
 
-type StudentAPI struct {
-	Service *jservice.StudentService
+type ClassAPI struct {
+	Service *jservice.ClassService
 }
 
-func NewStudentAPI(service *jservice.StudentService) *StudentAPI {
-	return &StudentAPI{Service: service}
+func NewClassAPI(service *jservice.ClassService) *ClassAPI {
+	return &ClassAPI{Service: service}
 }
 
-func (h *StudentAPI) CreateStudent(c *gin.Context) {
-	var q jmodel.Student
+func (h *ClassAPI) CreateClass(c *gin.Context) {
+	var q jmodel.Class
 	if err := c.ShouldBindJSON(&q); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if err := h.Service.CreateStudent(&q); err != nil {
+	if err := h.Service.CreateClass(&q); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithData(q, c)
 }
 
-func (h *StudentAPI) GetStudentList(c *gin.Context) {
+func (h *ClassAPI) GetClassList(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 	keyword := strings.TrimSpace(c.Query("keyword"))
-	majorID := cast.ToInt(c.Query("major_id"))
-	classID := cast.ToInt(c.Query("class_id"))
 	institutionId := cast.ToInt(c.Query("institution_id"))
-	status := cast.ToInt(c.Query("status"))
-	all := cast.ToInt(c.Query("all"))
 
-	var students []jmodel.RStudent
+	var classs []jmodel.RClass
 	var total int64
 	var err error
 
-	if classID > 0 && all > 0 {
-		students, total, err = h.Service.GetStudentListBySortClass(page, pageSize, keyword, classID, institutionId, majorID, status)
-	} else {
-		students, total, err = h.Service.GetStudentList(page, pageSize, keyword, classID, institutionId, majorID, status)
-	}
+	classs, total, err = h.Service.GetClassList(page, pageSize, keyword, institutionId)
 
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithData(map[string]interface{}{
-		"list":  students,
+		"list":  classs,
 		"total": total,
 		"page":  page,
 		"size":  pageSize,
 	}, c)
 }
 
-func (h *StudentAPI) GetStudentByID(c *gin.Context) {
+func (h *ClassAPI) GetClassByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	q, err := h.Service.GetStudentByID(id)
+	q, err := h.Service.GetClassByID(id)
 	if err != nil {
-		global.GVA_LOG.Error("考生未找到!", zap.Error(err))
-		response.FailWithMessage("考生未找到", c)
+		global.GVA_LOG.Error("班级未找到!", zap.Error(err))
+		response.FailWithMessage("班级未找到", c)
 		return
 	}
 	response.OkWithData(q, c)
 }
 
-func (h *StudentAPI) UpdateStudent(c *gin.Context) {
+func (h *ClassAPI) UpdateClass(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	var q jmodel.Student
+	var q jmodel.Class
 	if err := c.ShouldBindJSON(&q); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
-	// 检查考生是否存在
-	existingStudent, err := h.Service.GetStudentByID(id)
-	if err != nil || existingStudent == nil {
-		global.GVA_LOG.Error("考生未找到!", zap.Error(err))
-		response.FailWithMessage("考生未找到", c)
+	// 检查班级是否存在
+	existingClass, err := h.Service.GetClassByID(id)
+	if err != nil || existingClass == nil {
+		global.GVA_LOG.Error("班级未找到!", zap.Error(err))
+		response.FailWithMessage("班级未找到", c)
 		return
 	}
 
-	if err := h.Service.UpdateStudent(id, &q); err != nil {
+	if err := h.Service.UpdateClass(id, &q); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithData("更新成功", c)
 }
 
-func (h *StudentAPI) BatchUpdateClass(c *gin.Context) {
-	var req jmodel.RBatchUpdateClass
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-
-	// 批量更新 major_id
-	if err := h.Service.BatchUpdateClass(req.StudentIDs, req.ClassId); err != nil {
-		global.GVA_LOG.Error("批量更新班级失败!", zap.Error(err))
-		response.FailWithMessage("批量更新班级失败", c)
-		return
-	}
-
-	response.OkWithData("批量更新成功", c)
-}
-
-func (h *StudentAPI) DeleteStudent(c *gin.Context) {
+func (h *ClassAPI) DeleteClass(c *gin.Context) {
 	idsStr := c.Param("id")
 	ids := parseIDs(idsStr)
 
-	// 检查考生是否存在
+	// 检查班级是否存在
 	for _, id := range ids {
-		existingStudent, err := h.Service.GetStudentByID(id)
-		if err != nil || existingStudent == nil {
-			global.GVA_LOG.Error("考生未找到!", zap.Error(err))
-			response.FailWithMessage("部分考生未找到", c)
+		existingClass, err := h.Service.GetClassByID(id)
+		if err != nil || existingClass == nil {
+			global.GVA_LOG.Error("班级未找到!", zap.Error(err))
+			response.FailWithMessage("部分班级未找到", c)
 			return
 		}
 	}
 
-	if err := h.Service.DeleteStudent(ids); err != nil {
+	if err := h.Service.DeleteClass(ids); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	response.OkWithMessage("考生删除成功", c)
+	response.OkWithMessage("班级删除成功", c)
 }
 
 func parseIDs(idsStr string) []int {
@@ -151,8 +126,8 @@ func parseIDs(idsStr string) []int {
 	return ids
 }
 
-// BatchImportStudents 用于处理批量导入题目，要根据文件格式和内容调整
-func (h *StudentAPI) BatchImportStudents(ctx *gin.Context) {
+// BatchImportClasss 用于处理批量导入题目，要根据文件格式和内容调整
+func (h *ClassAPI) BatchImportClasss(ctx *gin.Context) {
 	// 获取上传的文件
 	fileHeader, err := ctx.FormFile("file")
 	if err != nil {
@@ -192,9 +167,9 @@ func (h *StudentAPI) BatchImportStudents(ctx *gin.Context) {
 		return
 	}
 
-	// 将解析的数据转为Student结构体
+	// 将解析的数据转为Class结构体
 
-	response.OkWithMessage("考生批量导入成功", ctx)
+	response.OkWithMessage("班级批量导入成功", ctx)
 }
 
 func findID(data []map[string]string, value string) string {
@@ -206,7 +181,7 @@ func findID(data []map[string]string, value string) string {
 	return ""
 }
 
-func (h *StudentAPI) ExportStudents(c *gin.Context) {
+func (h *ClassAPI) ExportClasss(c *gin.Context) {
 	//// 获取查询参数
 	//page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	//pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
@@ -217,7 +192,7 @@ func (h *StudentAPI) ExportStudents(c *gin.Context) {
 	//status := cast.ToInt(c.Query("status"))
 	//
 	//// 调用服务层方法获取符合条件的题目列表
-	//students, _, err := h.Service.GetStudentList(page, pageSize, search, cate, level, majorID, status)
+	//classs, _, err := h.Service.GetClassList(page, pageSize, search, cate, level, majorID, status)
 	//if err != nil {
 	//	response.FailWithMessage(err.Error(), c)
 	//	return
@@ -234,16 +209,16 @@ func (h *StudentAPI) ExportStudents(c *gin.Context) {
 	//	return
 	//}
 	//
-	//// 写入考生数据
-	//for _, student := range students {
+	//// 写入班级数据
+	//for _, class := range classs {
 	//	record := []string{
-	//		student.Title,
-	//		cast.ToString(student.Cate),
-	//		student.Answer,
-	//		student.Author,
-	//		cast.ToString(student.MajorID),
-	//		student.MajorName,
-	//		student.Tag,
+	//		class.Title,
+	//		cast.ToString(class.Cate),
+	//		class.Answer,
+	//		class.Author,
+	//		cast.ToString(class.MajorID),
+	//		class.MajorName,
+	//		class.Tag,
 	//	}
 	//	if err := csvWriter.Write(record); err != nil {
 	//		response.FailWithMessage(err.Error(), c)
@@ -260,8 +235,8 @@ func (h *StudentAPI) ExportStudents(c *gin.Context) {
 	//
 	//// 设置响应头
 	//c.Header("Content-Type", "text/csv")
-	//c.Header("Content-Disposition", "attachment; filename=students.csv")
-	//c.Header("File-Name", "students.csv")
+	//c.Header("Content-Disposition", "attachment; filename=classs.csv")
+	//c.Header("File-Name", "classs.csv")
 
 	// 发送 CSV 数据
 	//c.String(http.StatusOK, csvData.String())

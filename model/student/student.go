@@ -35,12 +35,18 @@ type RStudent struct {
 	JobCode         string    `gorm:"type:varchar(255);not null" json:"job_code"`
 	JobName         string    `gorm:"type:varchar(255);not null" json:"job_name"`
 	JobDesc         string    `gorm:"type:varchar(255);not null" json:"job_desc"`
-	MajorIDs        string    `gorm:"type:varchar(512);not null" json:"major_ids"`
+	MajorIDs        []string  `gorm:"type:varchar(512);not null" json:"major_ids"`
 	MajorNames      []string  `gorm:"type:varchar(512);not null" json:"major_names"`
 	Status          int       `gorm:"not null" json:"status"`
+	ClassSorted     int       `gorm:"not null;default:0" json:"class_sorted"`
 	StatusName      string    `gorm:"not null;default:0" json:"status_name"`
 	CreateTime      time.Time `gorm:"not null" json:"create_time"`
 	UpdateTime      time.Time `gorm:"not null;update:CURRENT_TIMESTAMP" json:"update_time"`
+}
+
+type RBatchUpdateClass struct {
+	StudentIDs []int `json:"student_ids" binding:"required,min=1"`
+	ClassId    int   `json:"class_id" binding:"required"`
 }
 
 // TableName 返回表名

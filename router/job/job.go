@@ -65,7 +65,7 @@ func (e *JobRouter) InitJobRouter(Router *gin.RouterGroup) {
 		// @Router /job/{id} [put]
 		jobRouter.PUT("/job/:id", jobAPI.UpdateJob)
 
-		jobRouter.POST("/update-major", jobAPI.BatchUpdateMajor)
+		jobRouter.POST("/job/update-major", jobAPI.BatchUpdateMajor)
 
 		// @Summary 删除试题
 		// @Description 根据ID删除试题

@@ -115,7 +115,7 @@ func (s *JobService) GetJobByCode(code string) (*job.RJob, error) {
 	return r, nil
 }
 
-func (s *JobService) GetJobList(page, pageSize int, keyword string, majorID int) ([]job.RJob, int64, error) {
+func (s *JobService) GetJobList(page, pageSize int, keyword string, majorID int, code string) ([]job.RJob, int64, error) {
 	var (
 		total int64
 		jobs  []job.Job
@@ -133,6 +133,11 @@ func (s *JobService) GetJobList(page, pageSize int, keyword string, majorID int)
 	// 筛选条件
 	if majorID != 0 {
 		db = db.Where("major_id = ?", majorID)
+	}
+	db = db.Where("status = ?", stable.StatusActive)
+
+	if code != "" {
+		db = db.Where("code = ?", code)
 	}
 	db = db.Where("status = ?", stable.StatusActive)
 

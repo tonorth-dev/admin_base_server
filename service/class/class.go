@@ -5,27 +5,28 @@ import (
 	"admin_base_server/model/class"
 	stable "admin_base_server/model/const"
 	"admin_base_server/service/config"
-	"admin_base_server/service/major"
+	"admin_base_server/service/institution"
 	"errors"
 	"gorm.io/gorm"
 	"strings"
 )
 
 type ClassService struct {
-	DB            *gorm.DB
-	configService *config.ConfigService
-	majorService  *major.MajorService
+	DB                 *gorm.DB
+	configService      *config.ConfigService
+	institutionService *institution.InstitutionService
 }
 
 func NewClassService() *ClassService {
 	return &ClassService{
-		DB:            global.GVA_DB,
-		configService: config.NewConfigService(),
-		majorService:  major.NewMajorService(),
+		DB:                 global.GVA_DB,
+		configService:      config.NewConfigService(),
+		institutionService: institution.NewInstitutionService(),
 	}
 }
 
 func (s *ClassService) CreateClass(q *class.Class) error {
+	q.Status = stable.StatusActive
 	return s.DB.Create(q).Error
 }
 
@@ -41,19 +42,18 @@ func (s *ClassService) GetClassByID(id int) (*class.RClass, error) {
 	r = &class.RClass{
 		ID:            q.ID,
 		ClassName:     q.ClassName,
-		StudentNum:    q.StudentNum,
 		Password:      q.Password,
 		InstitutionID: q.InstitutionID,
 		Teacher:       q.Teacher,
 		Status:        q.Status,
-		StatusName:    "Active", // 根据实际情况设置 StatusName
+		StatusName:    stable.RecordStatusMap[q.Status], // 根据实际情况设置 StatusName
 		CreateTime:    q.CreateTime,
 		UpdateTime:    q.UpdateTime,
 	}
 	return r, nil
 }
 
-func (s *ClassService) GetClassList(page, pageSize int, keyword, cate, level string, institutionID int, status int) ([]class.RClass, int64, error) {
+func (s *ClassService) GetClassList(page, pageSize int, keyword string, institutionID int) ([]class.RClass, int64, error) {
 	var (
 		total    int64
 		classes  []class.Class
@@ -69,12 +69,6 @@ func (s *ClassService) GetClassList(page, pageSize int, keyword, cate, level str
 	}
 
 	// 筛选条件
-	if cate != "" {
-		db = db.Where("cate = ?", cate)
-	}
-	if level != "" {
-		db = db.Where("level = ?", level)
-	}
 	if institutionID != 0 {
 		db = db.Where("institution_id = ?", institutionID)
 	}
@@ -89,17 +83,22 @@ func (s *ClassService) GetClassList(page, pageSize int, keyword, cate, level str
 	}
 
 	for _, v := range classes {
+		insDetail, err := s.institutionService.GetInstitutionByID(v.InstitutionID)
+		if err != nil {
+			return nil, 0, err
+		}
+
 		rClasses = append(rClasses, class.RClass{
-			ID:            v.ID,
-			ClassName:     v.ClassName,
-			StudentNum:    v.StudentNum,
-			Password:      v.Password,
-			InstitutionID: v.InstitutionID,
-			Teacher:       v.Teacher,
-			Status:        v.Status,
-			StatusName:    "Active", // 根据实际情况设置 StatusName
-			CreateTime:    v.CreateTime,
-			UpdateTime:    v.UpdateTime,
+			ID:              v.ID,
+			ClassName:       v.ClassName,
+			Password:        v.Password,
+			InstitutionID:   v.InstitutionID,
+			InstitutionName: insDetail.Name,
+			Teacher:         v.Teacher,
+			Status:          v.Status,
+			StatusName:      stable.RecordStatusMap[v.Status], // 根据实际情况设置 StatusName
+			CreateTime:      v.CreateTime,
+			UpdateTime:      v.UpdateTime,
 		})
 	}
 
@@ -155,22 +154,4 @@ func (s *ClassService) getConfigMap() (map[string]string, map[string]string, err
 	}
 
 	return cateMap, levelMap, nil
-}
-
-func (s *ClassService) getMajorMap() (map[int]string, error) {
-	majorMap := make(map[int]string)
-
-	majors, _, err := s.majorService.GetMajorList(1, 10000, 0, "")
-	if err != nil {
-		return nil, err
-	}
-
-	if len(majors) == 0 {
-		return nil, errors.New("专业配置错误")
-	}
-	for _, v := range majors {
-		majorMap[v.ID] = v.MajorName
-	}
-
-	return majorMap, nil
 }

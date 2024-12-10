@@ -47,6 +47,7 @@ func Routers() *gin.Engine {
 	jobRouter := router.RouterGroupApp.Job
 	institutionRouter := router.RouterGroupApp.Institution
 	studentRouter := router.RouterGroupApp.Student
+	classRouter := router.RouterGroupApp.Class
 	// 如果想要不使用nginx代理前端网页，可以修改 web/.env.production 下的
 	// VUE_APP_BASE_API = /
 	// VUE_APP_BASE_PATH = http://localhost
@@ -108,6 +109,7 @@ func Routers() *gin.Engine {
 		jobRouter.InitJobRouter(PrivateGroup)                       // 岗位路由
 		institutionRouter.InitInstitutionRouter(PrivateGroup)       // 机构路由
 		studentRouter.InitStudentRouter(PrivateGroup)               // 机构路由
+		classRouter.InitClassRouter(PrivateGroup)
 	}
 
 	//插件路由安装

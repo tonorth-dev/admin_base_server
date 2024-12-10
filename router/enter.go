@@ -2,6 +2,7 @@ package router
 
 import (
 	"admin_base_server/router/book"
+	"admin_base_server/router/class"
 	"admin_base_server/router/config"
 	"admin_base_server/router/example"
 	"admin_base_server/router/institution"
@@ -24,4 +25,5 @@ type RouterGroup struct {
 	Job         job.RouterGroup
 	Institution institution.RouterGroup
 	Student     student.RouterGroup
+	Class       class.RouterGroup
 }

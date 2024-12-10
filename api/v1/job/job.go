@@ -42,6 +42,7 @@ func (h *JobAPI) GetJobList(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 	search := strings.TrimSpace(c.Query("keyword"))
 	majorID := cast.ToInt(c.Query("major_id"))
+	code := strings.TrimSpace(c.Query("code"))
 	all := cast.ToInt(c.Query("all"))
 
 	var jobs []jmodel.RJob
@@ -51,7 +52,7 @@ func (h *JobAPI) GetJobList(c *gin.Context) {
 	if majorID > 0 && all > 0 {
 		jobs, total, err = h.Service.GetJobListBySortMajor(page, pageSize, search, majorID)
 	} else {
-		jobs, total, err = h.Service.GetJobList(page, pageSize, search, majorID)
+		jobs, total, err = h.Service.GetJobList(page, pageSize, search, majorID, code)
 	}
 
 	if err != nil {
